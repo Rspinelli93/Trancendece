@@ -1,0 +1,81 @@
+sequenceDiagram
+    autonumber
+    actor A as Player A
+    participant AUI as Person 1 UI A
+    participant WS as Person 2 Socket server
+    participant Queue as Person 2 Queue
+    participant Match as Person 2 Match manager
+    participant App as Person 3 Services
+    participant DB as PostgreSQL
+    participant Runner as Person 4 Runner
+    participant BUI as Person 1 UI B
+    actor B as Player B
+
+    A->>AUI: Click Find me a rival
+    AUI->>WS: queue:join {requestId}
+    WS->>Queue: add authenticated user A
+    Queue-->>AUI: queue:status SEARCHING
+
+    B->>BUI: Click Find me a rival
+    BUI->>WS: queue:join {requestId}
+    WS->>Queue: add authenticated user B
+    Queue->>Queue: Pair first two available users
+    Queue->>App: Create match with 10 validated exercises
+    App->>DB: Transaction: match, players, ordered challenges
+    DB-->>App: matchId
+    App-->>Queue: Match created
+    Queue-->>AUI: match:found {matchId}
+    Queue-->>BUI: match:found {matchId}
+
+    AUI->>AUI: Navigate /game/:matchId
+    BUI->>BUI: Navigate /game/:matchId
+    AUI->>WS: match:join {matchId}
+    BUI->>WS: match:join {matchId}
+    WS->>Match: Both players joined
+    Match->>Match: Create authoritative runtime and countdown
+    Match-->>AUI: match:snapshot
+    Match-->>BUI: match:snapshot
+    Match-->>AUI: match:state PLAYING + server deadline
+    Match-->>BUI: match:state PLAYING + server deadline
+
+    A->>AUI: Click Submit answer
+    AUI->>WS: match:submit {submissionId, matchId, exerciseId, code}
+    WS->>Match: Validate idempotency, membership, state and current exercise
+    Match->>Runner: OFFICIAL_SUBMISSION + hidden tests
+    Runner-->>Match: Normalized verdict
+
+    alt Accepted and challenge is not 10
+        Match->>Match: Add points and advance A
+        Match->>App: Persist submission and player state atomically
+        App->>DB: Transaction
+        DB-->>App: Committed
+        Match-->>AUI: match:submission-result ACCEPTED
+        Match-->>AUI: match:state
+        Match-->>BUI: match:state
+    else Wrong, compile error, runtime error or timeout
+        Match->>Match: Remove one life from A
+        Match->>App: Persist verdict and player state atomically
+        App->>DB: Transaction
+        DB-->>App: Committed
+        Match-->>AUI: match:submission-result verdict
+        Match-->>AUI: match:state
+        Match-->>BUI: match:state
+    else Accepted challenge 10 or life reaches 0
+        Match->>Match: Determine winner and terminal reason
+        Match->>App: Finalize once and update lifetime points
+        App->>DB: Terminal transaction
+        DB-->>App: Committed
+        Match-->>AUI: match:finished
+        Match-->>BUI: match:finished
+    end
+
+    Note over AUI,BUI: Disconnect and reconnect example
+    AUI--xWS: Network lost
+    WS->>Match: Mark A disconnected and start 20-second grace timer
+    Match-->>BUI: match:state A_DISCONNECTED
+    AUI->>WS: Reconnect with authenticated cookie
+    AUI->>WS: match:resume {matchId}
+    WS->>Match: Verify user and cancel grace timer
+    Match-->>AUI: match:snapshot authoritative current state
+    Match-->>BUI: match:state A_RECONNECTED
+

@@ -1,0 +1,76 @@
+flowchart TB
+    Browser["Remote player browsers"]
+
+    subgraph P1["PERSON 1 - FRONTEND AND UX"]
+        Router["React Router<br/>/login<br/>/register<br/>/dashboard<br/>/game/:matchId"]
+        Pages["Pages and components<br/>forms, leaderboard, editor, HUD"]
+        ApiClient["HTTP API client"]
+        SocketClient["Authenticated WebSocket client"]
+        Router --> Pages
+        Pages --> ApiClient
+        Pages --> SocketClient
+    end
+
+    subgraph P3["PERSON 3 - BACKEND, AUTH, API, DATABASE"]
+        Http["Express HTTP controllers<br/>/api/v1<br/>/api/public/v1"]
+        Auth["Session and OAuth services"]
+        AppServices["User, exercise, leaderboard,<br/>match-query services"]
+        Repos["Prisma repositories and transactions"]
+        Http --> Auth
+        Http --> AppServices
+        Auth --> Repos
+        AppServices --> Repos
+    end
+
+    subgraph P2["PERSON 2 - MULTIPLAYER AND GAME ENGINE"]
+        SocketServer["Socket.IO server and event router"]
+        Queue["Matchmaking queue"]
+        MatchManager["Authoritative match manager"]
+        Rules["Submission guards, lives,<br/>score, timer, winner"]
+        SocketServer --> Queue
+        SocketServer --> MatchManager
+        Queue --> MatchManager
+        MatchManager --> Rules
+    end
+
+    subgraph P4["PERSON 4 - C RUNNER AND CHALLENGES"]
+        RunnerApi["POST /internal/v1/execute"]
+        Sandbox["Isolated gcc sandbox<br/>limits + no network"]
+        Harness["Public tests, hidden tests,<br/>normalized verdict"]
+        RunnerApi --> Sandbox --> Harness
+    end
+
+    subgraph P5["PERSON 5 - LLM, INFRASTRUCTURE, INTEGRATION"]
+        GeneratorCli["Offline generation CLI<br/>no admin page"]
+        Generator["Streaming generator service<br/>schema checks + rate limit"]
+        Ollama["Ollama local model"]
+        Compose["Docker Compose, Nginx/HTTPS,<br/>health checks and environment"]
+        GeneratorCli --> Generator --> Ollama
+        Compose -. "starts and monitors" .-> Http
+        Compose -. "starts and monitors" .-> RunnerApi
+        Compose -. "starts and monitors" .-> Ollama
+    end
+
+    DB[("PostgreSQL")]
+    Proxy["Nginx HTTPS reverse proxy"]
+
+    Browser --> Proxy --> Router
+    ApiClient -- "HTTP /api/v1" --> Http
+    SocketClient -- "queue:* and match:* events" --> SocketServer
+    SocketServer -- "queue status and match state" --> SocketClient
+
+    MatchManager -- "read validated exercises<br/>create and finalize matches" --> AppServices
+    Rules -- "official code + hidden tests" --> RunnerApi
+    Harness -- "verdict + measurements" --> Rules
+
+    Http -- "public Run Code request" --> RunnerApi
+    Harness -- "public-test verdict" --> Http
+
+    Generator -- "candidate + validation tests" --> RunnerApi
+    Harness -- "exercise validation report" --> Generator
+    Generator -- "store approved exercise" --> AppServices
+
+    Repos --> DB
+    MatchManager -- "transaction commands" --> Repos
+    Compose -. "starts and backs up" .-> DB
+

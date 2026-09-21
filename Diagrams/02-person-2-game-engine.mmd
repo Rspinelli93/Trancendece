@@ -1,0 +1,87 @@
+flowchart TB
+    P1["Person 1 WebSocket client"]
+    P3["Person 3 services and repositories"]
+    P4["Person 4 C runner"]
+
+    subgraph Gateway["SOCKET ENTRY"]
+        SocketAuth["Authenticate socket from session cookie"]
+        EventRouter["Validate event name and payload"]
+        SocketAuth --> EventRouter
+    end
+
+    P1 -- "connect" --> SocketAuth
+
+    subgraph Matchmaking["MATCHMAKING"]
+        Join["queue:join"]
+        Leave["queue:leave"]
+        Queue["FIFO waiting queue<br/>one entry per user"]
+        QueueStatus["queue:status<br/>IDLE or SEARCHING"]
+        Pair["Take first two available players"]
+        Create["Create match, 2 players,<br/>and 10 ordered validated challenges"]
+        Found["match:found to both players"]
+        Join --> Queue --> Pair --> Create --> Found
+        Leave --> Queue
+        Queue --> QueueStatus
+    end
+
+    EventRouter --> Join
+    EventRouter --> Leave
+    Create -- "transaction" --> P3
+    Found --> P1
+    QueueStatus --> P1
+
+    subgraph Runtime["AUTHORITATIVE MATCH RUNTIME"]
+        Waiting["WAITING_FOR_PLAYERS"]
+        Countdown["COUNTDOWN"]
+        Playing["PLAYING"]
+        Grace["RECONNECT_GRACE"]
+        Finished["FINISHED"]
+
+        Waiting -- "both match:join" --> Countdown
+        Countdown -- "server start timestamp" --> Playing
+        Playing -- "socket disconnect" --> Grace
+        Grace -- "match:resume within 20 s" --> Playing
+        Grace -- "20 s expires" --> Finished
+        Playing -- "challenge 10, 0 lives,<br/>forfeit or 15 min limit" --> Finished
+    end
+
+    EventRouter -- "match:join or match:resume" --> Waiting
+
+    subgraph Submission["OFFICIAL SUBMISSION PIPELINE"]
+        Submit["match:submit<br/>submissionId, matchId,<br/>exerciseId, code"]
+        Guards["Check idempotency, membership,<br/>PLAYING state, current exercise,<br/>lives and deadline"]
+        Execute["Request OFFICIAL_SUBMISSION<br/>with hidden tests"]
+        Verdict{"Runner verdict"}
+        Accepted["Add base + time bonus<br/>advance challenge index<br/>reset challengeStartedAt"]
+        Rejected["Remove one life<br/>keep current challenge"]
+        Terminal{"Terminal condition?"}
+        Persist["Atomic transaction<br/>submission, player state,<br/>match state, lifetime points"]
+        Broadcast["match:submission-result<br/>then match:state or match:finished"]
+
+        Submit --> Guards --> Execute --> Verdict
+        Verdict -- "ACCEPTED" --> Accepted --> Terminal
+        Verdict -- "wrong, compile, runtime,<br/>or timeout" --> Rejected --> Terminal
+        Terminal -- "no" --> Persist --> Broadcast
+        Terminal -- "yes" --> Finished --> Persist
+    end
+
+    EventRouter --> Submit
+    Execute --> P4
+    P4 -- "normalized verdict + measurements" --> Verdict
+    Persist --> P3
+    Broadcast --> P1
+
+    Error["match:error<br/>invalid payload, unauthorized action,<br/>stale challenge or finished match"]
+    EventRouter -- "rejected event" --> Error --> P1
+
+    subgraph FinishRules["FINISH AND WINNER RULES"]
+        Complete10["First player completes challenge 10"]
+        ZeroLives["Opponent reaches 0 lives"]
+        Forfeit["match:forfeit or reconnect expiry"]
+        TimeLimit["15 minutes expire:<br/>higher progress, then score,<br/>then earliest last correct answer"]
+    end
+
+    Complete10 --> Finished
+    ZeroLives --> Finished
+    Forfeit --> Finished
+    TimeLimit --> Finished

@@ -1,0 +1,56 @@
+sequenceDiagram
+    autonumber
+    actor User
+    participant UI as Person 1 React
+    participant API as Person 3 Express
+    participant Auth as AuthService
+    participant DB as PostgreSQL
+    participant Runner as Person 4 Runner
+
+    Note over User,DB: Username and password login
+    User->>UI: Enter credentials and click Enter the arena
+    UI->>API: POST /api/v1/auth/login
+    API->>Auth: verifyCredentials(username, password)
+    Auth->>DB: Find active user and password hash
+    DB-->>Auth: User record
+    Auth->>DB: Insert hashed server-side session
+    DB-->>Auth: Session created
+    Auth-->>API: Session cookie parameters
+    API-->>UI: 204 + Set-Cookie HttpOnly Secure SameSite=Lax
+    UI->>API: GET /api/v1/users/me
+    API->>DB: Read user summary
+    DB-->>API: id, username, totalPoints
+    API-->>UI: 200 user summary
+    UI-->>User: Navigate to /dashboard
+
+    Note over User,DB: Dashboard initialization
+    par Current user
+        UI->>API: GET /api/v1/users/me
+        API->>DB: Read active user
+        DB-->>API: User summary
+        API-->>UI: 200 user summary
+    and Leaderboard
+        UI->>API: GET /api/v1/leaderboard?limit=20
+        API->>DB: Users ordered by total_points DESC
+        DB-->>API: Page of leaderboard entries
+        API-->>UI: 200 entries + nextCursor
+    end
+
+    Note over User,Runner: Run Code is practice and never changes lives or points
+    User->>UI: Click Run code
+    UI->>API: POST /api/v1/matches/:matchId/run
+    API->>DB: Verify session, match membership and current exercise
+    DB-->>API: Starter context and public tests
+    API->>Runner: POST /internal/v1/execute mode=PUBLIC_RUN
+    Runner-->>API: Verdict + safe diagnostics
+    API-->>UI: 200 run result
+    UI-->>User: Render output panel
+
+    Note over User,DB: Account deletion keeps historical match integrity
+    User->>UI: Confirm Delete my account
+    UI->>API: DELETE /api/v1/users/me
+    API->>DB: Transaction: anonymize user, revoke sessions, exclude from leaderboard
+    DB-->>API: Transaction committed
+    API-->>UI: 204 + clear session cookie
+    UI-->>User: Clear client state and navigate to /login
+

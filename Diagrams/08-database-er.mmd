@@ -1,0 +1,125 @@
+erDiagram
+    USERS {
+        uuid id PK
+        string username UK
+        string email UK
+        string password_hash
+        bigint total_points
+        datetime created_at
+        datetime deleted_at
+    }
+
+    OAUTH_ACCOUNTS {
+        uuid id PK
+        uuid user_id FK
+        string provider
+        string provider_user_id
+        datetime created_at
+    }
+
+    USER_SESSIONS {
+        uuid id PK
+        uuid user_id FK
+        string token_hash UK
+        datetime expires_at
+        datetime revoked_at
+        datetime created_at
+    }
+
+    API_KEYS {
+        uuid id PK
+        string name
+        string key_hash UK
+        int rate_limit_per_minute
+        datetime last_used_at
+        datetime revoked_at
+        datetime created_at
+    }
+
+    EXERCISES {
+        uuid id PK
+        string type
+        int difficulty
+        string title
+        text prompt
+        text starter_code
+        json public_tests
+        json hidden_tests
+        int time_limit_ms
+        string source
+        string validation_status
+        datetime created_at
+        datetime updated_at
+    }
+
+    MATCHES {
+        uuid id PK
+        string status
+        uuid winner_id FK
+        string termination_reason
+        datetime started_at
+        datetime deadline_at
+        datetime ended_at
+        datetime created_at
+    }
+
+    MATCH_PLAYERS {
+        uuid id PK
+        uuid match_id FK
+        uuid user_id FK
+        int slot
+        int score
+        int lives
+        int current_challenge_index
+        datetime challenge_started_at
+        datetime last_correct_at
+        datetime created_at
+    }
+
+    MATCH_CHALLENGES {
+        uuid id PK
+        uuid match_id FK
+        uuid exercise_id FK
+        int position
+        datetime created_at
+    }
+
+    SUBMISSIONS {
+        uuid id PK
+        uuid match_id FK
+        uuid user_id FK
+        uuid exercise_id FK
+        string kind
+        string verdict
+        int points_awarded
+        int duration_ms
+        int memory_kb
+        datetime created_at
+    }
+
+    GENERATION_JOBS {
+        uuid id PK
+        string topic
+        int difficulty
+        string exercise_type
+        int requested_count
+        string status
+        string error_code
+        uuid created_exercise_id FK
+        datetime started_at
+        datetime completed_at
+    }
+
+    USERS ||--o{ OAUTH_ACCOUNTS : "links"
+    USERS ||--o{ USER_SESSIONS : "owns"
+    USERS ||--o{ MATCH_PLAYERS : "participates as"
+    USERS ||--o{ SUBMISSIONS : "submits"
+    USERS o|--o{ MATCHES : "wins"
+
+    MATCHES ||--|{ MATCH_PLAYERS : "contains exactly two"
+    MATCHES ||--|{ MATCH_CHALLENGES : "orders ten"
+    MATCHES ||--o{ SUBMISSIONS : "records"
+
+    EXERCISES ||--o{ MATCH_CHALLENGES : "selected for"
+    EXERCISES ||--o{ SUBMISSIONS : "answered by"
+    EXERCISES o|--o{ GENERATION_JOBS : "created from"

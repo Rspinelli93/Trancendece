@@ -1,0 +1,71 @@
+flowchart TB
+    P3Run["Person 3 RunService<br/>PUBLIC_RUN"]
+    P2Submit["Person 2 game engine<br/>OFFICIAL_SUBMISSION"]
+    P5Validate["Person 5 generator<br/>EXERCISE_VALIDATION"]
+
+    subgraph Boundary["INTERNAL RUNNER API"]
+        Endpoint["POST /internal/v1/execute"]
+        Auth["Internal shared secret or<br/>private Compose network"]
+        Schema["Validate mode, C source,<br/>tests, compiler options and limits"]
+        Size["Reject oversized source,<br/>test bundle or output limit"]
+        Endpoint --> Auth --> Schema --> Size
+    end
+
+    P3Run --> Endpoint
+    P2Submit --> Endpoint
+    P5Validate --> Endpoint
+
+    subgraph Scheduler["BOUNDED EXECUTION"]
+        Queue["In-memory bounded queue"]
+        Concurrency["Fixed maximum concurrent jobs"]
+        Workspace["Create unique temporary workspace"]
+        Queue --> Concurrency --> Workspace
+    end
+
+    Size --> Queue
+
+    subgraph Sandbox["ISOLATED C SANDBOX"]
+        Source["Write user source and<br/>server-owned test harness"]
+        Compile["gcc with fixed flags<br/>capture bounded stderr"]
+        CompileDecision{"Compilation succeeded?"}
+        Execute["Execute test binary"]
+        Limits["Wall timeout, CPU, RAM,<br/>PIDs, file size and output limits"]
+        Isolation["No network<br/>read-only base filesystem<br/>non-root user<br/>no backend or database secrets"]
+        Tests{"All selected tests pass?"}
+
+        Source --> Compile --> CompileDecision
+        CompileDecision -- "yes" --> Execute
+        Limits -. "enforced on" .-> Compile
+        Limits -. "enforced on" .-> Execute
+        Isolation -. "contains" .-> Compile
+        Isolation -. "contains" .-> Execute
+        Execute --> Tests
+    end
+
+    Workspace --> Source
+
+    subgraph Verdicts["NORMALIZED VERDICT"]
+        Accepted["ACCEPTED"]
+        Wrong["WRONG_ANSWER"]
+        CompileError["COMPILE_ERROR"]
+        RuntimeError["RUNTIME_ERROR"]
+        Timeout["TIMEOUT"]
+        InternalError["INTERNAL_ERROR"]
+        Result["Return verdict, compile diagnostics,<br/>test summary, duration and memory<br/>Never return hidden inputs or expected outputs"]
+    end
+
+    CompileDecision -- "no" --> CompileError --> Result
+    Tests -- "yes" --> Accepted --> Result
+    Tests -- "no" --> Wrong --> Result
+    Execute -- "signal or non-zero" --> RuntimeError --> Result
+    Execute -- "limit exceeded" --> Timeout --> Result
+    Queue -- "runner infrastructure failure" --> InternalError --> Result
+
+    Cleanup["Always delete temporary workspace"]
+    Result --> Cleanup
+    Cleanup -- "PUBLIC_RUN verdict" --> P3Run
+    Cleanup -- "official verdict" --> P2Submit
+    Cleanup -- "candidate validation report" --> P5Validate
+
+    NoDb["Runner has no database access,<br/>no player session logic,<br/>and no scoring authority"]
+    Isolation -. "security boundary" .-> NoDb

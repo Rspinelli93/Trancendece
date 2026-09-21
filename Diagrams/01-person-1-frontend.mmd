@@ -1,0 +1,70 @@
+flowchart TB
+    User["Player"] --> Router["React Router"]
+
+    subgraph Routes["BROWSER ROUTES"]
+        Login["/login<br/>username/password<br/>GitHub or Google"]
+        Register["/register<br/>create account"]
+        Dashboard["/dashboard<br/>identity, total points,<br/>matchmaking, leaderboard"]
+        Game["/game/:matchId<br/>challenge, editor, HUD,<br/>output and final result"]
+    end
+
+    Router --> Login
+    Router --> Register
+    Router --> Guard["AuthGuard"]
+    Guard --> Dashboard
+    Guard --> Game
+
+    subgraph UIActions["BUTTON AND PAGE BEHAVIOR"]
+        LoginActions["Enter the arena<br/>Continue with GitHub<br/>Continue with Google<br/>Create an account"]
+        DashboardActions["Find me a rival<br/>Cancel search<br/>Load more leaderboard<br/>Logout<br/>Delete account"]
+        GameActions["Edit code locally<br/>Run code<br/>Submit answer<br/>Leave game<br/>Recover connection"]
+    end
+
+    Login --> LoginActions
+    Register --> LoginActions
+    Dashboard --> DashboardActions
+    Game --> GameActions
+
+    subgraph FrontendServices["PERSON 1 OWNED SERVICES"]
+        Api["apiClient.ts<br/>credentials included<br/>typed errors"]
+        Socket["socketClient.ts<br/>cookie-authenticated<br/>acknowledgements"]
+        AuthState["Auth state<br/>UNKNOWN, GUEST, AUTHENTICATED"]
+        QueueState["Queue state<br/>IDLE, JOINING, SEARCHING, MATCH_FOUND"]
+        MatchState["Match state<br/>CONNECTING, COUNTDOWN, PLAYING,<br/>RECONNECTING, FINISHED"]
+        EditorState["Editor state<br/>code, run status, output<br/>no official game authority"]
+    end
+
+    LoginActions --> Api
+    DashboardActions --> Api
+    DashboardActions --> Socket
+    GameActions --> Api
+    GameActions --> Socket
+
+    Api --> AuthState
+    Socket --> QueueState
+    Socket --> MatchState
+    GameActions --> EditorState
+
+    subgraph P3["CONTRACT WITH PERSON 3"]
+        AuthHttp["POST /api/v1/auth/register<br/>POST /api/v1/auth/login<br/>POST /api/v1/auth/logout<br/>GET /api/v1/auth/oauth/... "]
+        UserHttp["GET /api/v1/users/me<br/>DELETE /api/v1/users/me"]
+        LeaderboardHttp["GET /api/v1/leaderboard"]
+        MatchHttp["GET /api/v1/matches/:matchId/snapshot<br/>POST /api/v1/matches/:matchId/run"]
+    end
+
+    Api --> AuthHttp
+    Api --> UserHttp
+    Api --> LeaderboardHttp
+    Api --> MatchHttp
+
+    subgraph P2["CONTRACT WITH PERSON 2"]
+        ClientEvents["queue:join<br/>queue:leave<br/>match:join<br/>match:resume<br/>match:submit<br/>match:forfeit"]
+        ServerEvents["queue:status<br/>match:found<br/>match:snapshot<br/>match:state<br/>match:submission-result<br/>match:finished<br/>match:error"]
+    end
+
+    Socket --> ClientEvents
+    ServerEvents --> Socket
+
+    NoRunner["No direct browser-to-runner connection<br/>No browser endpoint can set points, lives, progress, or winner"]
+    GameActions -. "security boundary" .-> NoRunner
+

@@ -1,0 +1,103 @@
+flowchart TB
+    P1["Person 1 HTTP client"]
+    P2["Person 2 game engine"]
+    P4["Person 4 runner API"]
+    P5["Person 5 generation CLI"]
+    External["External API consumer<br/>X-API-Key"]
+
+    subgraph Middleware["EXPRESS ENTRY AND MIDDLEWARE"]
+        RequestId["Request ID and structured logging"]
+        Security["HTTPS, CORS, headers,<br/>body size and content type"]
+        Validate["Schema validation"]
+        Session["Session authentication"]
+        ApiKey["API-key authentication<br/>and rate limiting"]
+        RequestId --> Security --> Validate
+    end
+
+    P1 --> RequestId
+    External --> RequestId
+    Validate --> Session
+    Validate --> ApiKey
+
+    subgraph Controllers["PLAYER-FACING CONTROLLERS - /api/v1"]
+        AuthController["AuthController<br/>register, login, logout,<br/>GitHub and Google OAuth"]
+        UserController["UserController<br/>GET and DELETE /users/me"]
+        LeaderboardController["LeaderboardController<br/>GET /leaderboard"]
+        MatchController["MatchController<br/>GET snapshot<br/>POST run code"]
+    end
+
+    Session --> AuthController
+    Session --> UserController
+    Session --> LeaderboardController
+    Session --> MatchController
+
+    subgraph PublicControllers["SECURED PUBLIC API - /api/public/v1"]
+        ExercisePublic["Exercise CRUD<br/>list, read, create,<br/>update, delete"]
+        LeaderboardPublic["Public leaderboard read"]
+        Serializer["Public serializer<br/>removes hidden tests<br/>and reference solutions"]
+        ExercisePublic --> Serializer
+    end
+
+    ApiKey --> ExercisePublic
+    ApiKey --> LeaderboardPublic
+
+    subgraph Services["APPLICATION SERVICES"]
+        AuthService["AuthService<br/>password hash, OAuth linking,<br/>session creation and revocation"]
+        UserService["UserService<br/>read self, anonymize deletion"]
+        LeaderboardService["LeaderboardService<br/>total_points DESC<br/>cursor pagination"]
+        MatchQueryService["MatchQueryService<br/>membership and snapshot"]
+        RunService["RunService<br/>current challenge + public tests<br/>no score or life mutation"]
+        ExerciseService["ExerciseService<br/>validation, CRUD,<br/>approved insertion"]
+        ResultService["MatchResultService<br/>idempotent terminal transaction<br/>and lifetime point updates"]
+    end
+
+    AuthController --> AuthService
+    UserController --> UserService
+    LeaderboardController --> LeaderboardService
+    MatchController --> MatchQueryService
+    MatchController --> RunService
+    ExercisePublic --> ExerciseService
+    LeaderboardPublic --> LeaderboardService
+
+    RunService -- "PUBLIC_RUN" --> P4
+    P4 -- "verdict and safe diagnostics" --> RunService
+
+    P2 -- "create match, persist submission,<br/>update state, finalize result" --> ResultService
+    P2 -- "select validated exercises" --> ExerciseService
+    P5 -- "store runner-approved exercise" --> ExerciseService
+
+    subgraph Persistence["PRISMA REPOSITORIES"]
+        UserRepo["UserRepository"]
+        SessionRepo["SessionRepository"]
+        ExerciseRepo["ExerciseRepository"]
+        MatchRepo["MatchRepository"]
+        SubmissionRepo["SubmissionRepository"]
+        ApiKeyRepo["ApiKeyRepository"]
+        GenerationRepo["GenerationJobRepository"]
+        Transaction["Prisma transaction boundary"]
+    end
+
+    AuthService --> UserRepo
+    AuthService --> SessionRepo
+    UserService --> UserRepo
+    UserService --> SessionRepo
+    LeaderboardService --> UserRepo
+    MatchQueryService --> MatchRepo
+    RunService --> MatchRepo
+    ExerciseService --> ExerciseRepo
+    ResultService --> Transaction
+    Transaction --> MatchRepo
+    Transaction --> SubmissionRepo
+    Transaction --> UserRepo
+    ApiKey --> ApiKeyRepo
+    P5 --> GenerationRepo
+
+    DB[("PostgreSQL<br/>schema in 08-database-er.mmd")]
+    UserRepo --> DB
+    SessionRepo --> DB
+    ExerciseRepo --> DB
+    MatchRepo --> DB
+    SubmissionRepo --> DB
+    ApiKeyRepo --> DB
+    GenerationRepo --> DB
+

@@ -1,0 +1,60 @@
+flowchart TB
+    Developer["Developer or evaluator"]
+
+    subgraph LLM["OFFLINE LLM CHALLENGE GENERATION - NO ADMIN PAGE"]
+        Cli["CLI input<br/>topic, difficulty, type, count"]
+        RateLimit["Local token bucket<br/>and bounded generation queue"]
+        Prompt["PromptBuilder<br/>strict exercise JSON schema<br/>few-shot seed examples"]
+        OllamaAdapter["OllamaAdapter<br/>stream tokens and status"]
+        Ollama["Local Ollama model"]
+        Parse["Incremental stream display<br/>then strict JSON parse"]
+        Schema["Schema and policy validation<br/>C only, allowed types,<br/>limits and required tests"]
+        RunnerGate["Person 4 runner<br/>EXERCISE_VALIDATION"]
+        Approval{"Runner-approved?"}
+        ExerciseService["Person 3 ExerciseService<br/>insert validated exercise"]
+        Reject["Typed error<br/>invalid JSON, model offline,<br/>timeout, invalid tests or unsafe output"]
+
+        Developer --> Cli --> RateLimit --> Prompt --> OllamaAdapter --> Ollama
+        Ollama -- "stream" --> OllamaAdapter --> Parse --> Schema --> RunnerGate --> Approval
+        Approval -- "yes" --> ExerciseService
+        Approval -- "no" --> Reject
+        OllamaAdapter -- "offline or timeout" --> Reject
+        Parse -- "parse failure" --> Reject
+        Schema -- "schema failure" --> Reject
+    end
+
+    DB[("PostgreSQL exercise pool")]
+    ExerciseService --> DB
+
+    subgraph Infra["DOCKER COMPOSE AND DELIVERY"]
+        Nginx["Nginx<br/>HTTPS termination<br/>frontend static files<br/>reverse proxy"]
+        Frontend["React frontend container"]
+        Backend["Express backend container"]
+        Postgres["PostgreSQL container<br/>persistent volume"]
+        Runner["C runner container<br/>restricted resources and network"]
+        OllamaContainer["Ollama container<br/>local model volume"]
+        Health["Health checks and startup order"]
+        Env[".env.example<br/>documented non-secret config<br/>runtime secrets excluded from Git"]
+        Smoke["Clean-machine integration test<br/>login, queue, match, run, submit,<br/>reconnect, finish and leaderboard"]
+
+        Nginx --> Frontend
+        Nginx --> Backend
+        Backend --> Postgres
+        Backend --> Runner
+        Backend --> OllamaContainer
+        Health -. "gates readiness" .-> Nginx
+        Health -. "gates readiness" .-> Backend
+        Health -. "gates readiness" .-> Postgres
+        Health -. "gates readiness" .-> Runner
+        Health -. "gates readiness" .-> OllamaContainer
+        Env -. "configures" .-> Nginx
+        Env -. "configures" .-> Backend
+        Smoke --> Nginx
+    end
+
+    OllamaAdapter -. "uses container" .-> OllamaContainer
+    RunnerGate -. "calls internal API" .-> Runner
+    ExerciseService -. "stores through" .-> Backend
+
+    Independence["Live matches read stored validated exercises.<br/>An unavailable LLM never interrupts gameplay."]
+    DB --> Independence
