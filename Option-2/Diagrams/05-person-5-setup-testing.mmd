@@ -1,0 +1,25 @@
+flowchart TB
+    Person["Person 5: Make the whole project easy to run"]
+    Config["Document prerequisites and .env.example<br/>Keep real secrets out of Git"]
+    Start["One documented Compose start command"]
+    Web["Nginx container<br/>HTTPS, React files, proxy"]
+    App["One backend container<br/>Express and Socket.IO"]
+    DB[("PostgreSQL container<br/>Persistent storage")]
+    Person --> Config --> Start
+    Start --> Web
+    Start --> App
+    Start --> DB
+    Web <--> App
+    App <--> DB
+    Checks["Test with teammates"]
+    Person --> Checks
+    Checks --> Login["Register, login, logout"]
+    Checks --> Game["Two computers, all answer types,<br/>reconnect, result and leaderboard"]
+    Checks --> Concurrent["Two matches at once<br/>Repeated and late submissions"]
+    Checks --> Pages["Small screens, keyboard, Chrome console,<br/>Privacy and Terms links"]
+    Checks --> Api["Protected API, rate limits,<br/>no private answers in responses"]
+    Status["Basic GET /health readiness"]
+    App --> Status
+    Extra["Extra-browser and backup/status modules<br/>only if the team chooses them"]
+    Extra -.-> Checks
+

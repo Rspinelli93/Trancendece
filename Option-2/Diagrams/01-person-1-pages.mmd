@@ -1,0 +1,26 @@
+flowchart TB
+    Start["Person 1: What the player sees"]
+    Guest["Guest pages<br/>/login and /register"]
+    Info["Everyone can read<br/>/privacy and /terms"]
+    Dash["Signed-in dashboard<br/>/dashboard"]
+    Match["Participant game page<br/>/game/:matchId"]
+    Start --> Guest
+    Start --> Info
+    Guest -->|"Successful login"| Dash
+    Dash -->|"Find a rival"| Queue["queue:join<br/>Cancel: queue:leave"]
+    Queue -->|"match:found"| Match
+    Dash --> Reads["GET /api/v1/users/me<br/>GET /api/v1/leaderboard"]
+    Dash --> AccountActions["POST /api/v1/auth/logout<br/>DELETE /api/v1/users/me"]
+    Guest --> Auth["POST /api/v1/auth/register<br/>POST /api/v1/auth/login<br/>GET /api/v1/auth/oauth/:provider"]
+    Match --> Input["Choose an option<br/>Write expected output<br/>Fill named code gaps"]
+    Input -->|"match:submit"| Receipt["Show Answer received"]
+    Match --> Recovery["GET /api/v1/matches/:matchId/snapshot<br/>match:join or match:resume"]
+    Update["match:state<br/>match:round-result<br/>match:finished"] --> Match
+    Match --> Leave["Confirm leave<br/>match:forfeit"]
+    Result["Final result stays on the game page"] -->|"Return"| Dash
+    Match --> Result
+    Care["Shared controls, labels, small screens,<br/>keyboard access, loading and error states"]
+    Care -.-> Guest
+    Care -.-> Dash
+    Care -.-> Match
+

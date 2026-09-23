@@ -1,0 +1,40 @@
+sequenceDiagram
+    autonumber
+    actor User as Player
+    participant UI as Person 1 pages
+    participant API as Person 3 backend
+    participant Game as Person 2 live state
+    participant DB as Database
+    Note over User,DB: Login and dashboard
+    User->>UI: Enter email and password
+    UI->>API: POST /api/v1/auth/login
+    API->>DB: Read user and check password securely
+    API->>DB: Save session
+    API-->>UI: 200 safe user summary and secure cookie
+    UI->>API: GET /api/v1/users/me
+    API->>DB: Read own safe summary
+    DB-->>API: Name and total points
+    API-->>UI: 200 summary
+    UI->>API: GET /api/v1/leaderboard
+    API->>DB: Read rankings
+    DB-->>API: Ranked entries
+    API-->>UI: 200 entries and nextCursor
+    Note over User,DB: Read a match after a page refresh
+    UI->>API: GET /api/v1/matches/:matchId/snapshot
+    API->>API: Verify session and participation
+    alt Match is active
+        API->>Game: Read current live state
+        Game-->>API: Safe state without accepted answers
+    else Match is finished
+        API->>DB: Read saved final result
+        DB-->>API: Final result
+    end
+    API-->>UI: 200 permitted snapshot
+    Note over User,DB: Logout invalidates the same identity everywhere
+    User->>UI: Click Logout
+    UI->>API: POST /api/v1/auth/logout
+    API->>DB: Revoke session
+    API->>Game: Close this session's connections
+    API-->>UI: 204 and clear cookie
+    UI-->>User: Return to login
+

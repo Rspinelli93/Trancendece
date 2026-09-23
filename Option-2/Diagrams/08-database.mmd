@@ -1,0 +1,85 @@
+erDiagram
+    USERS {
+        uuid id PK
+        string email UK
+        string display_name
+        string password_hash
+        int total_points
+        datetime created_at
+        datetime deleted_at
+    }
+    SESSIONS {
+        uuid id PK
+        uuid user_id FK
+        string token_hash UK
+        datetime expires_at
+        datetime revoked_at
+    }
+    OAUTH_ACCOUNTS {
+        uuid id PK
+        uuid user_id FK
+        string provider
+        string provider_user_id
+    }
+    API_KEYS {
+        uuid id PK
+        string name
+        string key_hash UK
+        datetime revoked_at
+    }
+    QUESTIONS {
+        uuid id PK
+        string type
+        string status
+        int version
+        text prompt
+        json public_content
+        json private_answer_rules
+        text explanation
+        datetime updated_at
+    }
+    MATCHES {
+        uuid id PK
+        string status
+        uuid winner_id FK
+        string finish_reason
+        int current_round
+        datetime round_deadline
+        datetime started_at
+        datetime finished_at
+    }
+    MATCH_PLAYERS {
+        uuid id PK
+        uuid match_id FK
+        uuid user_id FK
+        int score
+        datetime joined_at
+    }
+    MATCH_QUESTIONS {
+        uuid id PK
+        uuid match_id FK
+        uuid question_id FK
+        int position
+        int question_version
+        json private_snapshot
+    }
+    ANSWERS {
+        uuid id PK
+        uuid match_question_id FK
+        uuid user_id FK
+        uuid submission_id
+        json submitted_answer
+        boolean correct
+        int points
+        datetime received_at
+    }
+    USERS ||--o{ SESSIONS : has
+    USERS ||--o{ OAUTH_ACCOUNTS : links
+    USERS ||--o{ MATCH_PLAYERS : participates
+    USERS ||--o{ ANSWERS : submits
+    USERS o|--o{ MATCHES : wins
+    MATCHES ||--|{ MATCH_PLAYERS : has_players
+    MATCHES ||--|{ MATCH_QUESTIONS : has_ordered_questions
+    QUESTIONS ||--o{ MATCH_QUESTIONS : copied_into
+    MATCH_QUESTIONS ||--o{ ANSWERS : receives
+

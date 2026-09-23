@@ -1,0 +1,20 @@
+flowchart TB
+    Authors["Person 4 with another reviewer<br/>Prepare and review questions"]
+    Types["Three types<br/>Multiple choice / output / code gaps"]
+    Validate["Check wording, accepted answers,<br/>sizes, gap names, and explanations"]
+    Bank["Draft becomes active after review<br/>Store through shared database access"]
+    Authors --> Types --> Validate --> Bank
+    API["Protected question API<br/>List / read / create / update / archive"]
+    API -->|"API key, limits, validation"| Validate
+    Bank -->|"Safe public question only"| Page["Person 1 displays the question"]
+    Bank -->|"Private frozen copy"| Game["Person 2 runs the match"]
+    Game -->|"Submitted answer and private question"| Checker["Check prepared accepted answers<br/>No compiler or LLM"]
+    Checker --> Decision{"Matches an accepted answer?"}
+    Decision -->|"Yes"| Correct["Correct"]
+    Decision -->|"No"| Wrong["Incorrect"]
+    Correct -->|"Result only"| Game
+    Wrong -->|"Result only"| Game
+    Game --> Scoring["Person 2 applies score and winner rules"]
+    Optional["We need to agree:<br/>how strictly do we compare answers?"]
+    Optional -.-> Checker
+

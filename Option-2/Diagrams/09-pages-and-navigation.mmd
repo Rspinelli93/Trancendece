@@ -1,0 +1,27 @@
+flowchart TB
+    Root["/"]
+    Auth{"Signed in?"}
+    Login["/login"]
+    Register["/register"]
+    Dash["/dashboard"]
+    Game["/game/:matchId"]
+    Root --> Auth
+    Auth -->|"No"| Login
+    Auth -->|"Yes"| Dash
+    Login -->|"Create account"| Register
+    Register -->|"Account created"| Login
+    Login -->|"Email/password or chosen provider"| Dash
+    Dash -->|"queue:join then match:found"| Game
+    Game -->|"match:submit"| Game
+    Game -->|"Final result stays here"| Result["Result view on same game page"]
+    Result -->|"Back"| Dash
+    Game -->|"Confirmed match:forfeit"| Dash
+    Dash -->|"Logout or confirmed account deletion"| Login
+    Footer["Footer on every page"]
+    Footer --> Privacy["/privacy"]
+    Footer --> Terms["/terms"]
+    Optional["Extra features we can choose"]
+    Optional -.-> Watch["/watch/:matchId<br/>Spectator module"]
+    Optional -.-> Practice["/practice and /practice/:questionId<br/>Practice or search choice"]
+    Optional -.-> History["/history<br/>Full statistics module"]
+

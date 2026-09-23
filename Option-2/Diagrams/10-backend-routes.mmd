@@ -1,0 +1,39 @@
+flowchart LR
+    Entry["HTTPS front door"]
+    subgraph Guest["ACCOUNT ENTRY — Person 3"]
+        Register["POST /api/v1/auth/register"]
+        Login["POST /api/v1/auth/login"]
+        OAuth["GET /api/v1/auth/oauth/:provider<br/>GET /api/v1/auth/oauth/:provider/callback"]
+    end
+    subgraph Signed["SESSION REQUIRED — Person 3 with Person 2 for matches"]
+        Me["GET /api/v1/users/me<br/>DELETE /api/v1/users/me"]
+        Logout["POST /api/v1/auth/logout"]
+        Rank["GET /api/v1/leaderboard"]
+        Snapshot["GET /api/v1/matches/:matchId/snapshot<br/>Participant check"]
+    end
+    subgraph Public["API KEY + LIMITS — Persons 4 and 3"]
+        List["GET /api/public/v1/questions"]
+        Detail["GET /api/public/v1/questions/:questionId"]
+        Create["POST /api/public/v1/questions"]
+        Edit["PUT /api/public/v1/questions/:questionId"]
+        Delete["DELETE /api/public/v1/questions/:questionId"]
+        PublicRank["GET /api/public/v1/leaderboard"]
+    end
+    subgraph Support["SUPPORT — Persons 4 and 5"]
+        Docs["GET /api-docs<br/>GET /api/openapi.json"]
+        Health["GET /health"]
+    end
+    Entry --> Guest
+    Entry --> Signed
+    Entry --> Public
+    Entry --> Support
+    Check["Validate input and return safe data"]
+    Guest --> Check
+    Signed --> Check
+    Public --> Check
+    Check --> DB[("Shared database access")]
+    Socket["Secure Socket.IO connection<br/>queue:* and match:* messages<br/>Person 2"]
+    Entry --> Socket
+    Socket --> Game["Game rules + Person 4 checker"]
+    Game --> DB
+

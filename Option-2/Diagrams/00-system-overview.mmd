@@ -1,0 +1,29 @@
+flowchart TB
+    Player["Players on separate computers"]
+    Pages["Person 1: React pages<br/>Questions, forms, scores"]
+    FrontDoor["Person 5: Nginx<br/>HTTPS and website files"]
+    subgraph App["ONE BACKEND APPLICATION"]
+        Accounts["Person 3: Accounts and saved information<br/>Express requests"]
+        Game["Person 2: Live matches<br/>Socket.IO messages"]
+        Check["Person 4: Questions and answer checking"]
+        Data["Shared Prisma database access"]
+        Accounts --> Data
+        Game --> Check
+        Game --> Data
+        Check --> Data
+    end
+    DB[("PostgreSQL<br/>Users, questions, matches, answers")]
+    Player --> Pages
+    Pages <-->|"HTTPS requests and secure live messages"| FrontDoor
+    FrontDoor <-->|"/api/v1 and /api/public/v1"| Accounts
+    FrontDoor <-->|"Queue and match messages"| Game
+    Accounts -->|"Question API calls"| Check
+    Data <--> DB
+    Team["Five teammates can work in pairs"]
+    Team -.-> Pages
+    Team -.-> App
+    Setup["Person 5: Container setup and whole-project tests"]
+    Setup -.-> FrontDoor
+    Setup -.-> App
+    Setup -.-> DB
+

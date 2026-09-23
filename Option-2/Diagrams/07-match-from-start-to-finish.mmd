@@ -1,0 +1,44 @@
+sequenceDiagram
+    autonumber
+    participant A as Player A page
+    participant G as Person 2 game
+    participant C as Person 4 checker
+    participant DB as Database via shared access
+    participant B as Player B page
+    A->>G: queue:join
+    G-->>A: queue:status SEARCHING
+    B->>G: queue:join
+    G->>DB: Save match, players, private question copies
+    G-->>A: match:found
+    G-->>B: match:found
+    A->>G: match:join
+    B->>G: match:join
+    G-->>A: match:snapshot
+    G-->>B: match:snapshot
+    loop Each shared round
+        G-->>A: match:state with question and deadline
+        G-->>B: match:state with question and deadline
+        A->>G: match:submit with submissionId and answer
+        G->>G: Check player, round, deadline, duplicate
+        G->>C: Check answer against private accepted answers
+        C-->>G: Correct or incorrect
+        G->>DB: Save answer and marking once
+        G-->>A: match:answer-received
+        Note over A,B: Player B follows the same submission path
+        G->>G: Close round when both answer or time ends
+        G-->>A: match:round-result with marks and scores
+        G-->>B: match:round-result with marks and scores
+    end
+    G->>DB: Save final result and lifetime totals once
+    G-->>A: match:finished
+    G-->>B: match:finished
+    Note over A,B: Reconnect can happen during an active match
+    A--xG: Connection lost
+    G->>G: Start agreed grace timer; round deadline continues
+    G-->>B: match:state with connection status
+    A->>G: Reconnect using session cookie
+    A->>G: match:resume
+    G->>G: Verify identity and allowed recovery
+    G-->>A: Current match:snapshot
+    Note over A,B: If grace expires, apply forfeit or cancellation rules
+

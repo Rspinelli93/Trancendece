@@ -1,0 +1,25 @@
+flowchart TB
+    Entry["Person 3: Ordinary backend requests"]
+    Auth["Register and login<br/>Email, password, chosen OAuth provider"]
+    Session["Secure session cookie<br/>Same identity for HTTP and live play"]
+    User["GET /api/v1/users/me<br/>DELETE /api/v1/users/me"]
+    Rank["GET /api/v1/leaderboard"]
+    Match["GET /api/v1/matches/:matchId/snapshot<br/>Only that match's participants"]
+    Store["Shared Prisma access<br/>Safe reads and all-or-nothing saves"]
+    DB[("PostgreSQL")]
+    Entry --> Auth --> Session
+    Session --> User
+    Session --> Rank
+    Session --> Match
+    Auth --> Store
+    User --> Store
+    Rank --> Store
+    Match -->|"Finished record"| Store
+    Match -->|"Live state"| Game["Person 2: Current match state"]
+    Game -->|"Save answers and finish once"| Store
+    Store <--> DB
+    Content["Person 4: Question records"] --> Store
+    Keys["API-key checks for public question API<br/>Separate from player sessions"] --> Content
+    Logout["POST /api/v1/auth/logout<br/>Revoke session and live access"] --> Session
+    Safe["Never return passwords, keys,<br/>session secrets, or private answers"] -.-> Entry
+

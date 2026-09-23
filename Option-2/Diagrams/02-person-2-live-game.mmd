@@ -1,0 +1,31 @@
+flowchart TB
+    Connect["Person 2: Check login on live connection"]
+    Queue["queue:join / queue:leave<br/>One queue entry per user"]
+    Pair["Pair two available players"]
+    Create["Save match and private question copies"]
+    Join["match:found then match:join<br/>Both players arrive"]
+    Round["Start shared round<br/>Send public question and server deadline"]
+    Submit["match:submit<br/>Check player, round, deadline, duplicate"]
+    Check["Person 4 checks the answer"]
+    Save["Save answer and marks safely<br/>Person 3 helps with database"]
+    Ack["match:answer-received<br/>Private receipt, no correct-answer reveal"]
+    Close{"Both answered<br/>or deadline reached?"}
+    Result["match:round-result<br/>Publish marks and updated scores"]
+    More{"More rounds?"}
+    Finish["Save final result and totals once<br/>match:finished"]
+    Connect --> Queue --> Pair --> Create --> Join --> Round
+    Round --> Submit --> Check --> Save --> Ack --> Close
+    Round -->|"Server timer expires"| Close
+    Close -->|"Not yet"| RoundWait["Wait without accepting a second answer"]
+    RoundWait --> Close
+    Close -->|"Yes"| Result --> More
+    More -->|"Yes"| Round
+    More -->|"No"| Finish
+    Lost["Connection lost<br/>Start agreed grace period"]
+    Resume["match:resume<br/>Verify session and send match:snapshot"]
+    Round -.-> Lost
+    Lost -->|"Returns in time"| Resume
+    Resume --> Continue["Continue current round and deadline<br/>Do not restart the timer"]
+    Continue --> Submit
+    Lost -->|"Grace expires"| Finish
+    Leave["match:forfeit<br/>Apply agreed forfeit or cancellation rule"] --> Finish
