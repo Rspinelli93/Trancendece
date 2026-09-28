@@ -1,0 +1,35 @@
+flowchart TD
+    Admin["Admin JSON upload or edit"]
+    Generate["Platform LLM generation"]
+    Temp["Temporary admin batch"]
+    Checks["Format + compilation + tests"]
+    Good{"All checks pass?"}
+    Failed["Reject candidate<br/>Download errors or bounded generation retry"]
+    Origin{"Publication path?"}
+    Confirm["Admin confirms passed candidate"]
+    Trial["Save trial<br/>Students can receive it, RAG cannot"]
+    Student["Real student solution passes<br/>Version still enabled"]
+    Active["Save or promote active version"]
+    Index["Index for RAG<br/>Pending until indexing succeeds"]
+    Feedback["Ratings and reports<br/>Per student and version"]
+    Review["Needs attention flag<br/>Visible in exercise list"]
+    Disable["Admin action or configured threshold<br/>Disable version/exercise"]
+    Retain["Keep old history<br/>Block new scoring and RAG retrieval"]
+    Admin --> Temp
+    Temp --> Checks
+    Generate --> Checks
+    Checks --> Good
+    Good -->|"No"| Failed
+    Good -->|"Yes"| Origin
+    Origin -->|"Admin"| Confirm
+    Origin -->|"Generated"| Trial
+    Trial --> Student
+    Student --> Active
+    Confirm --> Active
+    Active --> Index
+    Trial --> Feedback
+    Active --> Feedback
+    Feedback --> Review
+    Review -->|"Admin disables or configured limit reached"| Disable
+    Disable --> Retain
+    Retain -->|"Edit as a new candidate"| Admin

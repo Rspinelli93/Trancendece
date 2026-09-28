@@ -1,0 +1,26 @@
+flowchart LR
+    Entry["HTTPS requests<br/>No sockets"]
+    Auth["Accounts - William<br/>POST /api/v1/auth/register<br/>POST /api/v1/auth/login<br/>POST /api/v1/auth/logout<br/>OAuth entry and callback"]
+    Learn["Learning - William + Julien + Rick<br/>GET /api/v1/topics<br/>GET /api/v1/exercises<br/>POST /api/v1/assignments<br/>POST /api/v1/assignments/:assignmentId/submissions"]
+    Poll["Own results<br/>GET /api/v1/jobs/:jobId<br/>GET /api/v1/submissions/:submissionId"]
+    Progress["Progress - Eliott + William<br/>GET /api/v1/progress<br/>GET /api/v1/activity<br/>GET /api/v1/recommendations<br/>GET /api/v1/badges<br/>GET /api/v1/leaderboard"]
+    Admin["Admin session - William + Julien<br/>/api/v1/admin/exercises<br/>/api/v1/admin/imports<br/>Validate, inspect, confirm, disable"]
+    PublicAPI["Scoped API key - William + Julien<br/>/api/public/v1/exercises<br/>GET POST PUT DELETE<br/>Validation and commit routes"]
+    Support["Public support - Garance<br/>GET /health<br/>GET /api-docs<br/>GET /api/openapi.json"]
+    DB[("Application database")]
+    Jobs["Background jobs<br/>Validation, generation, correction, recommendations"]
+    Entry --> Auth
+    Entry --> Learn
+    Entry --> Poll
+    Entry --> Progress
+    Entry --> Admin
+    Entry --> PublicAPI
+    Entry --> Support
+    Auth --> DB
+    Learn --> DB
+    Learn --> Jobs
+    Poll --> DB
+    Progress --> DB
+    Admin --> Jobs
+    PublicAPI --> Jobs
+    Jobs --> DB

@@ -1,0 +1,22 @@
+flowchart LR
+    Page["Account forms<br/>William + Eliott"]
+    Auth["Express checks login<br/>William"]
+    OAuth["OAuth provider"]
+    Session[("User and session records")]
+    Student["Signed-in student"]
+    Admin["Admin access<br/>Assigned during setup"]
+    Result["Finished correction<br/>Julien"]
+    Save["Save completion once<br/>William"]
+    Progress[("Topic progress and activity")]
+    View["Dashboard and progress page<br/>Eliott"]
+    Page --> Auth
+    Auth --> OAuth
+    OAuth --> Auth
+    Auth --> Session
+    Session --> Student
+    Session --> Admin
+    Result --> Save
+    Save --> Progress
+    Student --> View
+    Progress --> View
+    Admin --> Edit["Exercise list and JSON form"]

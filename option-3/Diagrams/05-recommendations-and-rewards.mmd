@@ -1,0 +1,25 @@
+flowchart LR
+    Outcomes[("Saved attempts and completions")]
+    Filter["Exclude faulty exercises and service errors"]
+    Features["Topic, level, past attempts, recent results"]
+    Train["Train and evaluate model<br/>Eliott + Rick"]
+    Rank["Rank suitable available exercises"]
+    Rule["After three unsuccessful attempts<br/>Offer easier practice"]
+    Next["Recommended exercises<br/>Student chooses"]
+    Rewards["Ordinary reward rules<br/>William + Eliott"]
+    Badges["Badges"]
+    Levels["Topic levels"]
+    Leader["Leaderboard"]
+    Votes["Exercise votes<br/>Percentage + sample size"]
+    Outcomes --> Filter
+    Filter --> Features
+    Features --> Train
+    Train --> Rank
+    Filter --> Rule
+    Rank --> Next
+    Rule --> Next
+    Votes --> Rank
+    Outcomes --> Rewards
+    Rewards --> Badges
+    Rewards --> Levels
+    Rewards --> Leader

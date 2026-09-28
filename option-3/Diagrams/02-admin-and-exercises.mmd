@@ -1,0 +1,27 @@
+flowchart TD
+    List["Exercise names and IDs<br/>Search, topic filter, sorting, pages"]
+    Detail["Select exercise<br/>JSON, status, votes, reports"]
+    Input["Paste JSON or upload files<br/>One exercise or a batch"]
+    Temp["Temporary candidate versions<br/>Not in permanent exercise library"]
+    Validate["Check JSON, compile, run tests<br/>Julien + Garance"]
+    Results["Show progress, then passed and failed lists"]
+    Errors["Download failed JSON<br/>with validation_errors"]
+    Discard["Discard failed temporary items"]
+    Confirm["Import passed exercises<br/>Admin confirms selected items"]
+    Save[("Save exercises and versions<br/>William")]
+    Index["Index eligible versions for RAG<br/>Rick"]
+    Disable["Disable?<br/>Confirmation required"]
+    Archived["Keep history<br/>Block new grading and RAG retrieval"]
+    List --> Detail
+    List --> Input
+    Detail -->|"Edit JSON"| Temp
+    Input --> Temp
+    Temp --> Validate
+    Validate --> Results
+    Results --> Errors
+    Results --> Discard
+    Results --> Confirm
+    Confirm --> Save
+    Save --> Index
+    Detail --> Disable
+    Disable -->|"Confirmed"| Archived

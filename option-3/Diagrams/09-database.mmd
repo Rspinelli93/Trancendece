@@ -1,0 +1,146 @@
+erDiagram
+    USERS ||--o{ SESSIONS : has
+    USERS ||--o{ OAUTH_ACCOUNTS : links
+    TOPICS ||--o{ EXERCISES : groups
+    EXERCISES ||--|{ EXERCISE_VERSIONS : versions
+    EXERCISE_VERSIONS ||--o| RAG_ENTRIES : indexes
+    USERS ||--o{ ASSIGNMENTS : receives
+    EXERCISE_VERSIONS ||--o{ ASSIGNMENTS : fixes_version
+    ASSIGNMENTS ||--o{ SUBMISSIONS : collects
+    USERS ||--o{ COMPLETIONS : earns
+    EXERCISES ||--o{ COMPLETIONS : completed
+    SUBMISSIONS ||--o| COMPLETIONS : first_success
+    USERS ||--o{ TOPIC_PROGRESS : progresses
+    TOPICS ||--o{ TOPIC_PROGRESS : tracks
+    USERS ||--o{ USER_BADGES : earns
+    BADGES ||--o{ USER_BADGES : awarded
+    USERS ||--o{ VOTES : votes
+    EXERCISE_VERSIONS ||--o{ VOTES : rated
+    USERS ||--o{ REPORTS : reports
+    EXERCISE_VERSIONS ||--o{ REPORTS : flagged
+    USERS o|--o{ JOBS : requests
+    USERS ||--o{ RECOMMENDATIONS : receives
+    EXERCISES ||--o{ RECOMMENDATIONS : suggested
+    MODEL_VERSIONS o|--o{ RECOMMENDATIONS : ranks
+    USERS {
+        uuid id PK
+        string email UK
+        string password_hash
+        string role
+    }
+    SESSIONS {
+        uuid id PK
+        uuid user_id FK
+        string token_hash UK
+        datetime expires_at
+    }
+    OAUTH_ACCOUNTS {
+        uuid id PK
+        uuid user_id FK
+        string provider
+        string provider_user_id
+    }
+    API_KEYS {
+        uuid id PK
+        string key_hash UK
+        string scope
+        boolean enabled
+    }
+    TOPICS {
+        string id PK
+        string name
+    }
+    EXERCISES {
+        uuid id PK
+        string slug UK
+        string topic_id FK
+        uuid current_version_id FK
+        boolean enabled
+    }
+    EXERCISE_VERSIONS {
+        uuid id PK
+        uuid exercise_id FK
+        int version_number
+        string origin
+        string publication_path
+        string status
+        int level
+        json public_content
+        json private_tests
+        text reference_solution
+    }
+    RAG_ENTRIES {
+        uuid version_id PK, FK
+        vector embedding
+        string embedding_model
+        string indexing_status
+    }
+    ASSIGNMENTS {
+        uuid id PK
+        uuid user_id FK
+        uuid version_id FK
+        datetime assigned_at
+        string state
+    }
+    SUBMISSIONS {
+        uuid id PK
+        uuid assignment_id FK
+        string request_id
+        text source_code
+        string status
+        json safe_result
+    }
+    COMPLETIONS {
+        uuid id PK
+        uuid user_id FK
+        uuid exercise_id FK
+        uuid submission_id FK
+        int awarded_points
+    }
+    TOPIC_PROGRESS {
+        uuid user_id PK, FK
+        string topic_id PK, FK
+        int progress_points
+        int level
+    }
+    BADGES {
+        string id PK
+        string name
+        json earning_rule
+    }
+    USER_BADGES {
+        uuid user_id PK, FK
+        string badge_id PK, FK
+        datetime awarded_at
+    }
+    VOTES {
+        uuid user_id PK, FK
+        uuid version_id PK, FK
+        int value
+    }
+    REPORTS {
+        uuid user_id PK, FK
+        uuid version_id PK, FK
+        string reason
+        text note
+    }
+    JOBS {
+        uuid id PK
+        uuid owner_id FK
+        string type
+        string state
+        int retry_count
+    }
+    MODEL_VERSIONS {
+        uuid id PK
+        datetime trained_at
+        string file_reference
+        json evaluation
+    }
+    RECOMMENDATIONS {
+        uuid id PK
+        uuid user_id FK
+        uuid exercise_id FK
+        uuid model_version_id FK
+        string reason
+    }

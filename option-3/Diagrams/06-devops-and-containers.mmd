@@ -1,0 +1,32 @@
+flowchart TB
+    Browser["Student or admin browser"]
+    subgraph App["Our application services - Garance with the team"]
+        Nginx["Nginx<br/>HTTPS entry and React files"]
+        API["Express API"]
+        Worker["Worker + Python scripts<br/>Same application codebase"]
+        DB[("App PostgreSQL + pgvector")]
+        Temp["Temporary import storage<br/>Size limit and expiry"]
+    end
+    subgraph Execution["Separate execution environment - Garance + Julien"]
+        JudgeAPI["Judge0 API"]
+        JudgeWorker["Judge0 workers<br/>C compiler and sandbox"]
+        JudgeData[("Judge0 queue and storage dependencies")]
+    end
+    Provider["LLM / embedding provider"]
+    Backup["Protected automatic backup<br/>Tested restore procedure"]
+    Health["Health checks and status page"]
+    Browser --> Nginx
+    Nginx --> API
+    API --> DB
+    API --> Temp
+    Worker --> DB
+    Worker --> Temp
+    Worker --> JudgeAPI
+    JudgeAPI --> JudgeData
+    JudgeData --> JudgeWorker
+    JudgeWorker --> JudgeData
+    Worker --> Provider
+    DB --> Backup
+    API -.-> Health
+    Worker -.-> Health
+    JudgeAPI -.-> Health

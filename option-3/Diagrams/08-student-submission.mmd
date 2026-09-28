@@ -1,0 +1,38 @@
+sequenceDiagram
+    actor Student
+    participant Page as React page
+    participant API as Express API
+    participant DB as PostgreSQL
+    participant Worker as Background worker
+    participant Judge as Judge0
+    participant RAG as RAG index
+    Student->>Page: Submit C code
+    Page->>API: POST assignment submissions + request ID
+    API->>DB: Check owner and version, save submission once
+    API-->>Page: 202 with submission ID
+    Worker->>DB: Claim pending job
+    Worker->>Judge: C code with approved test template
+    Judge-->>Worker: Execution token
+    loop Until runner finishes
+        Worker->>Judge: Read execution result
+        Judge-->>Worker: Queued, running, or final result
+    end
+    alt Service failure
+        Worker->>DB: Retryable service error, no learning penalty
+    else Tests fail
+        Worker->>DB: Save safe failure result
+    else All required checks pass
+        Worker->>DB: Save success and first-completion reward together
+        opt Passing version is an enabled LLM trial
+            Worker->>DB: Promote exact version once
+            Worker->>RAG: Queue embedding and indexing
+        end
+    end
+    loop Page polls while pending
+        Page->>API: GET submission by ID
+        API->>DB: Read own submission
+        DB-->>API: Current result
+        API-->>Page: Safe progress or final result
+    end
+    Page-->>Student: Result and earned progress
+    Note over Student,Page: Vote after a finished attempt, report at any time

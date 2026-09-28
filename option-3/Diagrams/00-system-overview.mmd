@@ -1,0 +1,26 @@
+flowchart TB
+    Student["Student pages<br/>React"]
+    Admin["Admin list and JSON form<br/>React"]
+    Front["Nginx<br/>HTTPS and page files"]
+    API["Express backend<br/>Accounts, routes, exercise rules"]
+    DB[("PostgreSQL + Prisma<br/>Users, versions, submissions, progress")]
+    Temp["Temporary import files<br/>Until confirmation or expiry"]
+    Worker["Background worker<br/>Same backend codebase"]
+    Judge["Judge0 service group<br/>Isolated C execution"]
+    RAG[("RAG tables in the same PostgreSQL<br/>Similarity search with pgvector")]
+    LLM["LLM + embedding provider"]
+    ML["Python recommendation scripts<br/>Training and ranking"]
+    Student --> Front
+    Admin --> Front
+    Front --> API
+    API --> DB
+    API --> Temp
+    API -->|"Queues slow work"| Worker
+    Worker --> DB
+    Worker --> Temp
+    Worker --> Judge
+    Worker --> RAG
+    Worker --> LLM
+    Worker --> ML
+    Student -.->|"Poll own job result through API"| API
+    Admin -.->|"Poll batch result through API"| API

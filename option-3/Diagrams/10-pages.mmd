@@ -1,0 +1,34 @@
+flowchart TD
+    Entry["/"]
+    Register["/register"]
+    Login["/login"]
+    Dash["/dashboard"]
+    Topics["/topics<br/>/topics/:topicId"]
+    Preview["/exercises/:exerciseId"]
+    Learn["/learn/:assignmentId<br/>Editor, result, votes, report"]
+    Progress["/progress"]
+    Badges["/badges"]
+    Leader["/leaderboard"]
+    Profile["/profile"]
+    Admin["/admin/exercises<br/>Admin access required"]
+    Upload["/admin/exercises/new<br/>JSON and batch progress"]
+    Edit["/admin/exercises/:exerciseId<br/>Edit or confirm disable"]
+    Public["Public footer links<br/>/privacy /terms /status"]
+    Entry -->|"Guest"| Login
+    Entry -->|"Signed in"| Dash
+    Login --> Register
+    Register --> Login
+    Login --> Dash
+    Dash --> Topics
+    Topics --> Preview
+    Preview -->|"Start assignment"| Learn
+    Dash -->|"Recommendation or continue"| Learn
+    Dash --> Progress
+    Dash --> Badges
+    Dash --> Leader
+    Dash --> Profile
+    Dash -->|"Admin only"| Admin
+    Admin --> Upload
+    Admin --> Edit
+    Login -.-> Public
+    Dash -.-> Public

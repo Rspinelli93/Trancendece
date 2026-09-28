@@ -1,0 +1,27 @@
+flowchart TD
+    Student["C code + assignment ID + request ID"]
+    Check["Check session, ownership, version<br/>Reject disabled version"]
+    Job["Save submission and queue job"]
+    Template["Build files from approved test template<br/>Julien"]
+    Runner["Judge0 isolated runner<br/>Garance"]
+    Compile["Compile C"]
+    Tests["Run public and private cases<br/>Enforce execution limits"]
+    Memory["Memory checker<br/>Only after setup is verified"]
+    Result["Backend interprets results<br/>No private test details in student response"]
+    Save["Save result once<br/>First completion updates progress"]
+    Page["Student polls submission result"]
+    Failure["Service failure<br/>Retry without learning penalty"]
+    Student --> Check
+    Check --> Job
+    Job --> Template
+    Template --> Runner
+    Runner --> Compile
+    Compile --> Tests
+    Tests -.-> Memory
+    Compile -->|"Compilation error"| Result
+    Tests --> Result
+    Memory --> Result
+    Runner -->|"Infrastructure problem"| Failure
+    Failure --> Save
+    Result --> Save
+    Save --> Page
