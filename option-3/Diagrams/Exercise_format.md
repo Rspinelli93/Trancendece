@@ -1,78 +1,112 @@
 # The exercise JSON
 
-One file describes one exercise. Use the same format for admin uploads and LLM generation. A batch is several files or an array of exercise objects.
+Each exercise is described in one JSON file. Admin uploads and LLM-generated exercises use the same format.
+
+We can upload one file, several files, or a JSON array containing several exercises.
 
 ## What belongs inside
 
 | Field | Meaning |
 | --- | --- |
-| `schema_version` | Which file format this uses |
-| `slug`, `title` | Stable name and readable title |
-| `topic`, `level` | One allowed topic and difficulty level |
-| `language` | `c` for the first version |
-| `description` | Instructions and edge-case behaviour |
-| `function_signature` | The function the student must write |
-| `starter_code` | What initially appears in the editor |
-| `test_template` | One of our approved testing programs |
-| `examples` | Cases students can see |
-| `hidden_tests` | Private input and expected-result cases |
-| `reference_solution` | A solution used to validate the exercise |
-| `limits` | Requested time and memory limits, capped by our backend |
-| `requirements` | Allowed functions and other exercise rules |
+| `name` | Exercise title |
+| `topic` | One of our chosen topics |
+| `level` | Exercise difficulty |
+| `description` | Instructions, function to write, and examples |
+| `starter_code` | Code initially shown to the student |
+| `reference_solution` | A working answer used to validate the exercise |
+| `compiler_code` | A C program that tests the solution and prints results |
+| `expected_output` | What the testing program should print |
 
-The backend assigns IDs, version numbers, source, status, ratings, and RAG eligibility. JSON cannot mark itself approved. Requirements that need extra checks must be implemented in the test template; writing “do not use strlen” in a description does not enforce it.
+The backend assigns the exercise ID and status. It also sets time and memory limits for running code.
 
-## Small format example
-
-This illustrates a string-length exercise. The `c_string_to_int_v1` template calls the function with each input and returns an integer for our backend to compare.
+## Example
 
 ```json
 {
-  "schema_version": 1,
-  "slug": "count-characters",
-  "title": "Count the characters",
+  "name": "Count the characters",
   "topic": "strings",
   "level": 1,
-  "language": "c",
-  "description": "Return the number of characters before the terminating null byte. Input is a non-null C string. Do not change it.",
-  "function_signature": "int count_chars(const char *text);",
-  "starter_code": "int count_chars(const char *text) {\n    /* Your code */\n}\n",
-  "test_template": "c_string_to_int_v1",
-  "examples": [
-    {"input": "hello", "expected": 5},
-    {"input": "", "expected": 0}
-  ],
-  "hidden_tests": [
-    {"input": "a b", "expected": 3},
-    {"input": "42!", "expected": 3}
-  ],
-  "reference_solution": "int count_chars(const char *text) { int n = 0; while (text[n]) n++; return n; }",
-  "limits": {"cpu_seconds": 2, "memory_mb": 64},
-  "requirements": []
+  "description": "Write int count_chars(const char *text). Return the number of characters in the string, without counting the final null byte. The input is never NULL. Do not modify it. For example, hello returns 5 and an empty string returns 0.",
+  "starter_code": "int count_chars(const char *text)\n{\n    /* Write your code here */\n}\n",
+  "reference_solution": "int count_chars(const char *text)\n{\n    int count = 0;\n    while (text[count])\n        count++;\n    return count;\n}\n",
+  "compiler_code": "#include <stdio.h>\n\n{{SOLUTION}}\n\nint main(void)\n{\n    printf(\"%d\\n\", count_chars(\"hello\"));\n    printf(\"%d\\n\", count_chars(\"\"));\n    printf(\"%d\\n\", count_chars(\"a b\"));\n    return 0;\n}\n",
+  "expected_output": "5\n0\n3\n"
 }
 ```
 
-This is a format illustration, not our complete test coverage. Memory-management and linked-list tasks need their own approved templates, including allocation ownership and cleanup checks.
+Inside a JSON string, `\n` means a new line.
 
-The student response contains only the public fields. Hidden tests and reference solutions never appear in the browser's exercise JSON. We compare typed results exactly unless an exercise explicitly defines another rule.
+## How the code runs
 
-## Error download
+`compiler_code` contains a placeholder called `{{SOLUTION}}`. Our backend replaces it with either the reference solution or the student's code.
 
-Keep the original exercise fields and append `validation_errors` to that same object:
+The resulting program looks like this:
 
-```json
-"validation_errors": [
-  {
-    "type": "compilation_error",
-    "stage": "compile",
-    "message": "The reference solution could not compile.",
-    "details": "exercise.c:4: error: expected ';' before return"
-  }
-]
+```c
+#include <stdio.h>
+
+/* Reference solution or student's function goes here */
+
+int main(void)
+{
+    printf("%d\n", count_chars("hello"));
+    printf("%d\n", count_chars(""));
+    printf("%d\n", count_chars("a b"));
+    return 0;
+}
 ```
 
-For a batch, download an array of failed exercise objects with their own errors. On re-upload, the backend ignores the old error field and runs checks again. If a file is not valid JSON, return its filename, original text, and parse error in a small wrapper instead.
+Judge0 compiles and runs the program. Our backend compares its output with `expected_output`.
 
-Error categories include invalid format, compilation error, failed test, timeout, memory limit, crash, and service error. Memory error/leak categories require the extra checking setup described in [Compiler and correction](Compiler_and_correction.md).
+The program must finish successfully and produce the expected results to pass.
 
-Admin details can identify private failing tests. Students receive the same simple categories with private test information removed. A sanitizer result is reported as a leak only when the checker actually detects one.
+## Before an exercise is published
+
+1. Check that the JSON contains the required fields.
+2. Insert the reference solution into `compiler_code`.
+3. Send the completed program to Judge0.
+4. Compare its output with `expected_output`.
+
+If any check fails, the exercise is rejected. The admin sees the reason and can discard it.
+
+For a batch upload, show the passed and failed exercises separately. Only passed exercises confirmed by the admin are saved.
+
+Admin exercises can then enter the RAG. LLM-generated exercises remain trials until a student also submits a passing solution.
+
+## When a student submits
+
+1. Insert the student's code into the same `compiler_code`.
+2. Compile and run it through Judge0.
+3. Compare the output with the same `expected_output`.
+4. Save the result and award progress if the student passes.
+
+Students receive a simple result:
+
+- Passed.
+- Compilation error.
+- Wrong output.
+- Time limit reached.
+- Memory limit reached.
+- Program crashed.
+
+If our correction service fails, show a service error and allow a retry. It does not count as a student mistake.
+
+## What students can see
+
+Students see the exercise name, topic, level, description, and starter code.
+
+The reference solution, testing program, and expected test output stay on the server.
+
+## Broken exercises
+
+If an exercise turns out to be incorrect or unclear, students can report it. An admin can disable it so students and the RAG stop receiving it.
+
+We do not need a separate repair workflow or errors added to the exercise JSON. A corrected replacement can be uploaded and validated again.
+
+A passing test does not guarantee that an exercise is perfect, so ratings and reports remain useful.
+
+## Memory checks
+
+Time and memory limits protect the platform while code runs.
+
+Detecting a **memory leak** is a separate check. Correct output alone cannot tell us whether the program released its allocated memory. We only add memory-leak results if we configure and test a tool that detects them.

@@ -1,26 +1,26 @@
 flowchart TD
     Student["C code + assignment ID + request ID"]
-    Check["Check session, ownership, version<br/>Reject disabled version"]
+    Check["Check login and assignment<br/>Reject disabled exercise"]
     Job["Save submission and queue job"]
-    Template["Build files from approved test template<br/>Julien"]
+    Build["Replace {{SOLUTION}} in compiler_code<br/>with the student's code"]
     Runner["Judge0 isolated runner<br/>Garance"]
     Compile["Compile C"]
-    Tests["Run public and private cases<br/>Enforce execution limits"]
-    Memory["Memory checker<br/>Only after setup is verified"]
-    Result["Backend interprets results<br/>No private test details in student response"]
+    Run["Run with time and memory limits"]
+    Compare["Compare program output<br/>with expected_output"]
+    Result["Passed or a simple failure reason"]
     Save["Save result once<br/>First completion updates progress"]
     Page["Student polls submission result"]
     Failure["Service failure<br/>Retry without learning penalty"]
     Student --> Check
     Check --> Job
-    Job --> Template
-    Template --> Runner
+    Job --> Build
+    Build --> Runner
     Runner --> Compile
-    Compile --> Tests
-    Tests -.-> Memory
+    Compile --> Run
+    Run --> Compare
     Compile -->|"Compilation error"| Result
-    Tests --> Result
-    Memory --> Result
+    Run -->|"Timeout, memory limit, or crash"| Result
+    Compare -->|"Correct or wrong output"| Result
     Runner -->|"Infrastructure problem"| Failure
     Failure --> Save
     Result --> Save

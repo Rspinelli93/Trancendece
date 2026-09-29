@@ -44,9 +44,9 @@ Shorter code, speed, and commit counts do not prove better understanding. We hav
 
 ## Connections and routes
 
-Correction → saved outcomes → recommendation features → Python model → suggested exercise IDs → student page.
+Code checking → saved outcomes → recommendation features → Python model → suggested exercise IDs → student page.
 
-Correction also updates completions → topic progress → badge rules and leaderboard. These reward rules do not require the ML model.
+Passing code also updates completions → topic progress → badge rules and leaderboard. These reward rules do not require the ML model.
 
 Routes: `GET /api/v1/recommendations`, `GET /api/v1/progress`, `GET /api/v1/activity`, `GET /api/v1/badges`, and `GET /api/v1/leaderboard`.
 

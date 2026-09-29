@@ -8,31 +8,28 @@ Start with a simple list of exercise names and IDs. Search by ID or name, filter
 
 Click an exercise to see its JSON, ratings, and report count. The actions are **Edit** and **Disable**. Disable asks “Are you sure?” and removes the exercise from new assignments and RAG searches. We keep old results for student history.
 
-Topics come from our fixed list. User management, role editing, topic editing, and a separate reports page are outside this first version.
-
 ## Upload one or many
 
 Paste JSON, upload one file, or select several `.json` files. A pasted JSON array can also contain a batch.
 
 1. Check the files and required fields.
-2. Compile each reference solution and run its tests.
-3. Show progress, such as “Checking 7 of 20”.
+2. Compile each excersise solution and run its tests.
+3. Show progress (with a little loading thingy)
 4. Show a passed list and a failed list, with clear errors.
-5. Let us download failed exercises with `validation_errors` added.
-6. **Import passed exercises** saves only the passed items we confirm.
-7. **Discard failed exercises** removes failed items from the temporary batch.
+5. **Import passed exercises** saves only the passed items we confirm.
+6. **Discard failed exercises** removes failed items from the temporary batch.
 
 Before confirmation, files and results live in temporary job storage, not the permanent exercise library. A failed item never becomes an exercise record. Judge0 may hold its own execution records temporarily; those follow a cleanup policy.
 
-The page polls progress. It stops when the batch finishes and offers a retry if the job expires or the service restarts. Repeating the import request must not create duplicates.
+Repeating the import request must not create duplicates. So we need to add a check for if it already exists.
 
 ## Editing
 
 The JSON editor creates a candidate version. Validate it, view the result, then confirm the change. If validation fails, the previous version stays untouched.
 
-A confirmed edit creates a new version and resets the visible votes and reports. Old submissions and feedback stay attached to the old version. New assignments use the new version. An existing student attempt keeps its original version unless that version is disabled.
+A confirmed edit creates a new version and resets the visible votes and reports. Old versions can live in a json array of "old versions" inside the actual excersise. (We could use this as well for generating better excersises). Old submissions and feedback stay attached to the old version. New assignments use the new version.
 
-An admin-confirmed, validated edit follows the admin publication path and can enter RAG immediately. Its history still records whether the original content came from the LLM.
+An admin-confirmed, validated edit follows the admin publication path and can enter RAG immediately. There will be a variable inside the JSON saying that the excersise was created by the LLM or uploaded by the admin, this lets us have more control on the generation.
 
 ## Communication and routes
 
@@ -46,8 +43,8 @@ Express checks the admin session on every request. JSON cannot assign its own �
 
 ## What we should demonstrate
 
-Upload a mixed batch, download useful errors, and import only the successful files. Edit an active exercise with broken code and show that its old version remains usable. A normal student must be refused every admin action.
+Upload a mixed batch, download useful errors, and import only the successful files. Edit an active exercise with broken code and show that its old version does not remains usable. A normal student must be refused every admin action.
 
-Search needs filters, sorting, and pagination for its 1-point module (subject p.13). JSON upload alone is not the file-management or import/export module.
+Search needs filters, sorting, and pagination for its 1-point module (subject p.13), if we want we can keep a simple list and search by name only but we dont get this point, but it makes the searching simpler to develop. JSON upload alone is not the file-management or import/export module.
 
 [System diagram](02-admin-and-exercises.mmd)

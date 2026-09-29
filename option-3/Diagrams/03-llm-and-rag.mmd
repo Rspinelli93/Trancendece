@@ -1,16 +1,16 @@
 flowchart TD
     Need["Assignment needs more content<br/>Topic and level"]
     Retrieve["Find eligible matching examples<br/>Rick"]
-    Data[("RAG entries in PostgreSQL<br/>Exclude trials and disabled versions")]
+    Data[("RAG entries in PostgreSQL<br/>Exclude trials and disabled exercises")]
     Rating["Ratings influence example selection"]
-    LLM["LLM produces exercise JSON<br/>Tests and reference solution"]
-    Fields["Check format and approved template"]
-    Judge["Compile reference and run tests<br/>Julien"]
+    LLM["LLM produces exercise JSON<br/>Reference solution, compiler code, expected output"]
+    Fields["Check required fields and fixed topic"]
+    Judge["Insert reference solution<br/>Compile, run, compare output"]
     Pass{"Checks pass?"}
     Reject["Bounded retry or stop<br/>No student penalty"]
-    Trial[("Save trial version<br/>Not indexed for RAG")]
+    Trial[("Save trial exercise<br/>Not indexed for RAG")]
     Student["Student submits a passing solution"]
-    Promote["Promote exact enabled version once"]
+    Promote["Activate enabled exercise once"]
     Embed["Create embedding and index<br/>Retry indexing if needed"]
     Admin["Admin-confirmed valid import"]
     Need --> Retrieve

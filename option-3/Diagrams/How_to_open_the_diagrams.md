@@ -10,11 +10,11 @@ Each system has a short written guide and a diagram. Read the guide first if a t
 | [01 — Accounts and progress](01-accounts-and-progress.mmd) | Login and saved learning activity |
 | [02 — Admin and exercises](02-admin-and-exercises.mmd) | Batch upload, checks, confirmation, editing, disabling |
 | [03 — LLM and RAG](03-llm-and-rag.mmd) | Find examples, generate, validate, and reuse |
-| [04 — Compiler and correction](04-compiler-and-correction.mmd) | Code submission and result handling |
+| [04 — Compiler and code checking](04-compiler-and-correction.mmd) | Insert code, run it, and compare the output |
 | [05 — Recommendations and rewards](05-recommendations-and-rewards.mmd) | Model suggestions and ordinary reward rules |
 | [06 — DevOps](06-devops-and-containers.mmd) | Containers, private execution, status, and backups |
 | [07 — Exercise lifecycle](07-exercise-lifecycle.mmd) | Different admin and generated-exercise paths |
-| [08 — Student submission](08-student-submission.mmd) | Request, polling, correction, reward, and trial promotion |
+| [08 — Student submission](08-student-submission.mmd) | Submit, wait for the result, receive progress, and validate a trial |
 | [09 — Database](09-database.mmd) | Records and links between them |
 | [10 — Pages](10-pages.mmd) | Where students and admins navigate |
 | [11 — Routes](11-backend-routes.mmd) | Request groups and who handles them |

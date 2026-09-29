@@ -2,10 +2,9 @@ erDiagram
     USERS ||--o{ SESSIONS : has
     USERS ||--o{ OAUTH_ACCOUNTS : links
     TOPICS ||--o{ EXERCISES : groups
-    EXERCISES ||--|{ EXERCISE_VERSIONS : versions
-    EXERCISE_VERSIONS ||--o| RAG_ENTRIES : indexes
+    EXERCISES ||--o| RAG_ENTRIES : indexes
     USERS ||--o{ ASSIGNMENTS : receives
-    EXERCISE_VERSIONS ||--o{ ASSIGNMENTS : fixes_version
+    EXERCISES ||--o{ ASSIGNMENTS : assigned
     ASSIGNMENTS ||--o{ SUBMISSIONS : collects
     USERS ||--o{ COMPLETIONS : earns
     EXERCISES ||--o{ COMPLETIONS : completed
@@ -15,9 +14,9 @@ erDiagram
     USERS ||--o{ USER_BADGES : earns
     BADGES ||--o{ USER_BADGES : awarded
     USERS ||--o{ VOTES : votes
-    EXERCISE_VERSIONS ||--o{ VOTES : rated
+    EXERCISES ||--o{ VOTES : rated
     USERS ||--o{ REPORTS : reports
-    EXERCISE_VERSIONS ||--o{ REPORTS : flagged
+    EXERCISES ||--o{ REPORTS : flagged
     USERS o|--o{ JOBS : requests
     USERS ||--o{ RECOMMENDATIONS : receives
     EXERCISES ||--o{ RECOMMENDATIONS : suggested
@@ -52,25 +51,20 @@ erDiagram
     }
     EXERCISES {
         uuid id PK
-        string slug UK
+        string name
         string topic_id FK
-        uuid current_version_id FK
+        int level
+        text description
+        text starter_code
+        text reference_solution
+        text compiler_code
+        text expected_output
+        string source
+        string status
         boolean enabled
     }
-    EXERCISE_VERSIONS {
-        uuid id PK
-        uuid exercise_id FK
-        int version_number
-        string origin
-        string publication_path
-        string status
-        int level
-        json public_content
-        json private_tests
-        text reference_solution
-    }
     RAG_ENTRIES {
-        uuid version_id PK, FK
+        uuid exercise_id PK, FK
         vector embedding
         string embedding_model
         string indexing_status
@@ -78,7 +72,8 @@ erDiagram
     ASSIGNMENTS {
         uuid id PK
         uuid user_id FK
-        uuid version_id FK
+        uuid exercise_id FK
+        json exercise_copy
         datetime assigned_at
         string state
     }
@@ -115,12 +110,12 @@ erDiagram
     }
     VOTES {
         uuid user_id PK, FK
-        uuid version_id PK, FK
+        uuid exercise_id PK, FK
         int value
     }
     REPORTS {
         uuid user_id PK, FK
-        uuid version_id PK, FK
+        uuid exercise_id PK, FK
         string reason
         text note
     }

@@ -2,15 +2,15 @@
 
 **William leads. Eliott builds the pages.** They share the progress and activity work.
 
-Students register with email and password, or use the extra OAuth login option. A secure cookie keeps them signed in. A subscription here means an account, with no payment.
+Students register with email and password, or use the extra OAuth login option. A secure cookie keeps them signed in.
 
 ## What we build
 
 - Registration, login, logout, and a profile summary.
 - One progress record for each student and topic.
-- A dashboard showing completed exercises, attempts, and progress over time.
+- A dashboard showing progress over time, badges and leaderboard (this is like the list of top winners)
 - A simple admin permission, assigned through setup rather than a user-management page.
-- Privacy and Terms pages that remain accessible without logging in.
+- Privacy and Terms pages that remain accessible without logging in. (This is bs but i think its mandatory for the subject)
 
 React displays the information. Express checks who is asking. Prisma reads and saves it in PostgreSQL.
 
@@ -26,6 +26,8 @@ React displays the information. Express checks who is asking. Prisma reads and s
 Correction saves a result and its reward together. A repeated request cannot award the same exercise twice. Changing an exercise version should not become a way to farm points.
 
 ## Pages and routes
+
+(We can still discuss if we want to do less and merge some of them together)
 
 Pages: `/register`, `/login`, `/dashboard`, `/progress`, `/profile`, `/privacy`, `/terms`.
 

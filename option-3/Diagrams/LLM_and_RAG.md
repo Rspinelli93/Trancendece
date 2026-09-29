@@ -1,6 +1,6 @@
 # Exercise generation with LLM and RAG
 
-**Rick leads. Julien helps with exercise tests. William helps with storage.**
+**Rick leads. Julien helps with the compiler checks. William helps with storage.**
 
 The LLM writes new exercise drafts. RAG helps it find useful examples from our collection first. Students receive an exercise, not an AI conversation.
 
@@ -15,21 +15,23 @@ Our platform also needs its own generation flow for the proposed custom module. 
 1. Receive the chosen topic and appropriate level.
 2. Find similar eligible examples and teaching notes.
 3. Ask the LLM for the agreed JSON structure.
-4. Check the fields, fixed topic, test template, and size limits.
-5. Ask the correction system to compile the reference solution and run all tests.
-6. Reject failed drafts, or retry within a small configured limit.
-7. Save a passing draft as a trial and assign it to a student.
-8. After a real student's solution passes, make that version eligible for RAG.
+4. Check the required fields and fixed topic.
+5. Insert `reference_solution` into `compiler_code`.
+6. Ask Judge0 to compile and run the complete C program.
+7. Compare its result with `expected_output`.
+8. Discard failed drafts, or retry within a small configured limit.
+9. Save a passing draft as a trial and assign it to a student.
+10. After a real student's solution passes, make the exercise eligible for RAG.
 
 If generation fails, keep the student's progress unchanged and offer another saved exercise or a later retry. Use limits on generation requests and cost. The same need should not start many identical jobs at once.
 
 ## What belongs in RAG
 
-Admin exercises enter after successful checks and confirmed import. LLM exercises enter only after successful technical checks and a passing student submission. Disabled versions are never retrieved.
+Admin exercises enter after successful checks and confirmed import. LLM exercises enter only after successful compiler checks and a passing student submission. Disabled exercises are never retrieved.
 
-We store the original exercise in PostgreSQL. A separate record holds its search vector, version ID, and indexing status. A vector is a numerical description of the text; pgvector lets us compare those descriptions inside PostgreSQL. Our backend combines similarity with topic, level, and ratings. [pgvector reference](https://github.com/pgvector/pgvector)
+We store the exercise in PostgreSQL. A separate record holds its search vector, exercise ID, and indexing status. A vector is a numerical description of the text; pgvector lets us compare those descriptions inside PostgreSQL. Our backend combines similarity with topic, level, and ratings. [pgvector reference](https://github.com/pgvector/pgvector)
 
-Keep private solutions and test material accessible only to the generation worker. Student pages get a separate public view. If indexing fails, the saved exercise can still work for students; mark indexing as pending and retry. Do not claim it is searchable until indexing succeeds.
+Keep `reference_solution`, `compiler_code`, and `expected_output` on the server. Student pages receive only the name, topic, level, description, and starter code. If RAG indexing fails, the saved exercise can still work for students; mark indexing as pending and retry.
 
 ## Votes help choose examples
 

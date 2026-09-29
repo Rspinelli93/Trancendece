@@ -8,7 +8,7 @@ flowchart LR
     PublicAPI["Scoped API key - William + Julien<br/>/api/public/v1/exercises<br/>GET POST PUT DELETE<br/>Validation and commit routes"]
     Support["Public support - Garance<br/>GET /health<br/>GET /api-docs<br/>GET /api/openapi.json"]
     DB[("Application database")]
-    Jobs["Background jobs<br/>Validation, generation, correction, recommendations"]
+    Jobs["Background jobs<br/>Exercise checks, generation, student code, recommendations"]
     Entry --> Auth
     Entry --> Learn
     Entry --> Poll

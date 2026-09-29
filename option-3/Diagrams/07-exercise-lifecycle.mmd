@@ -1,20 +1,20 @@
 flowchart TD
     Admin["Admin JSON upload or edit"]
     Generate["Platform LLM generation"]
-    Temp["Temporary admin batch"]
-    Checks["Format + compilation + tests"]
+    Temp["Temporary admin upload"]
+    Checks["Required fields + reference solution<br/>Run compiler_code and compare output"]
     Good{"All checks pass?"}
-    Failed["Reject candidate<br/>Download errors or bounded generation retry"]
+    Failed["Discard failed upload<br/>or retry LLM generation"]
     Origin{"Publication path?"}
     Confirm["Admin confirms passed candidate"]
-    Trial["Save trial<br/>Students can receive it, RAG cannot"]
-    Student["Real student solution passes<br/>Version still enabled"]
-    Active["Save or promote active version"]
+    Trial["Save trial exercise<br/>Students can receive it, RAG cannot"]
+    Student["Real student solution passes<br/>Exercise still enabled"]
+    Active["Save or activate exercise"]
     Index["Index for RAG<br/>Pending until indexing succeeds"]
-    Feedback["Ratings and reports<br/>Per student and version"]
+    Feedback["Ratings and reports<br/>Per student and exercise"]
     Review["Needs attention flag<br/>Visible in exercise list"]
-    Disable["Admin action or configured threshold<br/>Disable version/exercise"]
-    Retain["Keep old history<br/>Block new scoring and RAG retrieval"]
+    Disable["Admin action or configured threshold<br/>Disable exercise"]
+    Retain["Keep student history<br/>Block new scoring and RAG retrieval"]
     Admin --> Temp
     Temp --> Checks
     Generate --> Checks
@@ -32,4 +32,4 @@ flowchart TD
     Feedback --> Review
     Review -->|"Admin disables or configured limit reached"| Disable
     Disable --> Retain
-    Retain -->|"Edit as a new candidate"| Admin
+    Retain -->|"Upload a corrected replacement"| Admin

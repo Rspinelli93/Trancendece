@@ -8,10 +8,11 @@ sequenceDiagram
     participant RAG as RAG index
     Student->>Page: Submit C code
     Page->>API: POST assignment submissions + request ID
-    API->>DB: Check owner and version, save submission once
+    API->>DB: Check owner and exercise, save submission once
     API-->>Page: 202 with submission ID
     Worker->>DB: Claim pending job
-    Worker->>Judge: C code with approved test template
+    Worker->>Worker: Insert student code into compiler_code
+    Worker->>Judge: Send the complete C program
     Judge-->>Worker: Execution token
     loop Until runner finishes
         Worker->>Judge: Read execution result
@@ -19,12 +20,14 @@ sequenceDiagram
     end
     alt Service failure
         Worker->>DB: Retryable service error, no learning penalty
-    else Tests fail
-        Worker->>DB: Save safe failure result
-    else All required checks pass
+    else Compile or run fails
+        Worker->>DB: Save a simple failure result
+    else Output is different
+        Worker->>DB: Save wrong output
+    else Output matches expected_output
         Worker->>DB: Save success and first-completion reward together
-        opt Passing version is an enabled LLM trial
-            Worker->>DB: Promote exact version once
+        opt Exercise is an enabled LLM trial
+            Worker->>DB: Activate exercise once
             Worker->>RAG: Queue embedding and indexing
         end
     end

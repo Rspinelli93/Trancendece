@@ -23,7 +23,7 @@ A learning platform is allowed. Live play and sockets are optional modules, not 
 
 ## The custom module needs a clear argument
 
-We propose: structured C exercises → existing-example retrieval → generation → reference-code tests → student trial → controlled reuse of the successful version, with feedback and version handling.
+We propose: structured C exercises → find useful saved examples → generate JSON → insert the reference solution into `compiler_code` → compare its result with `expected_output` → student trial → controlled reuse after a student passes.
 
 The subject's custom module must be **not already listed** and needs a README explanation of its value, technical challenges, and why it deserves 2 points. Complexity alone does not guarantee acceptance. Evaluators could consider our workflow too close to the listed RAG/LLM modules; we must explain the distinct exercise-authoring and validation system honestly.
 
