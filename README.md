@@ -37,3 +37,8 @@ The uploaded images will help us visualize a bit the routes we need to create as
 	/Images
 
 ---
+
+
+- Change the rating of excerises manually to ELO rating of excersises accorgind to the level of the student, and just add a report button for bad excersises.
+
+- 
