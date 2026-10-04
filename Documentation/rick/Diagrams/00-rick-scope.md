@@ -15,10 +15,10 @@ The **main backend** sends me a JSON request. Depending on the request, I will:
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"background":"#fffdf7","primaryTextColor":"#1f2937","lineColor":"#84a98c","clusterBkg":"#f7fee7","clusterBorder":"#86efac"}}}%%
 flowchart TD
-    Key["LEGEND / HOW TO READ THIS MAP<br/>Rounded box = action<br/>Diamond = choose a path<br/>Database shape = stored information<br/>Orange arrow = enters Rick's work<br/>Soft green arrow = work inside Rick's part<br/>Dark green arrow = leaves Rick's work"]
-    Sender["WHO SENDS THE DATA?<br/>The main backend<br/>(work done by other teammates)"]
+    Key["LEGEND / HOW TO READ THIS MAP<br/>Rounded box = action<br/>Diamond = choose a path<br/>Database shape = stored information<br/>Orange arrow = enters my work<br/>Soft green arrow = work inside my part<br/>Dark green arrow = leaves my work"]
+    Sender["WHO SENDS THE DATA?<br/>The main backend<br/>"]
 
-    subgraph Rick["RICK'S PART"]
+    subgraph Rick["MY PART"]
         Receive["1. RECEIVE AND CHECK THE DATA<br/>Accept JSON and check its format<br/>(Python, FastAPI, Pydantic)"]
         Choose{"2. WHAT KIND OF REQUEST IS IT?<br/>Database, new exercise, or exercise search<br/>(Python)"}
         Database["3A. READ OR SAVE INFORMATION<br/>Users, exercises, attempts, and reports<br/>(PostgreSQL, SQL, Psycopg)"]
