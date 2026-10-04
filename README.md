@@ -1,44 +1,20 @@
-# WELCOME TO TRANSENDECE
+*This project has been created as part of the 42 curriculum by [glucken, rspinell, ].*
 
->This readme will be filled later
+# C Coding Platform
 
----
+How it works:
 
-### Diagrams
+A student creates an account, explains what they want to practise, receives a suitable exercise from our validated library, writes C code, and submits it for testing.
 
-Please read the documentation inside:
+The platform uses RAG to search the exercise library. An LLM can only choose from the exercises found by that search. It does not generate new exercises. This keeps the content controlled and avoids filling the database with repeated exercises.
 
-	/Diagrams
+The project is currently being planned. Features and module points described here are targets, not completed work.
 
-It explains the architecture of the projects and the 5 distincted roles
+## Documentation
 
-### Documents breakdown:
+- [Current MVP and point plan](Documentation/README.md): what the platform includes, excludes, and still needs the team to decide.
+- [General application flow](Documentation/General_flow.md): how students, admins, the backend, RAG, the database, and the C tester communicate.
+- [Team tasks and technology choices](Documentation/Team_tasks_and_stack.md): who leads each system, who checks it, and which technologies are confirmed or still `TBD`.
+- [Subject v21.2](en.subject.pdf): the requirements used for every project decision.
+- [Deprecated proposals](Documentation/deprecated/): Options 1–4, kept as history and no longer used as the current architecture.
 
-> How_to_open_the_diagrams.md
-
-Explains how to install Mermaid and how to open the diagrams.
-
-> Understanding_the_diagrams.md
-
-Explains breifly the whole architecture of the project, I recommend starting here.
-
-> LLM+Correction_logic.md
-
-Explains the "Hardest part to understand" (or at least for me).
-
-Its the logic about the generation of the excersises and the correction.
-
----
-
-### Pictures
-
-The uploaded images will help us visualize a bit the routes we need to create as well as the infrastructure :)
-
-	/Images
-
----
-
-
-- Change the rating of excerises manually to ELO rating of excersises accorgind to the level of the student, and just add a report button for bad excersises.
-
-- 
