@@ -69,6 +69,7 @@ The features below and the work listed in the 15-point module plan are inside th
 - Clear database relations and validation in the frontend and backend.
 - HTTPS, ignored secrets, `.env.example`, Privacy Policy, and Terms of Service.
 - Containerized setup that starts with one documented command.
+- Separate backend services for the main application, AI/RAG, and code checking. They communicate through clear REST APIs using JSON.
 - C function and complete-program exercises.
 - JSON exercise upload and compiler validation before storage.
 - RAG search over a controlled exercise library.
@@ -106,8 +107,8 @@ The subject requires at least 14 module points. The current target is **15 point
 | Module | Points | Current plan |
 | --- | ---: | --- |
 | Frontend and backend frameworks | 2 | Both technologies are `TBD`. |
-| Public API | 2 | `TBD`; requires an API key, rate limits, documentation, at least five endpoints, and GET, POST, PUT, and DELETE. |
-| ORM | 1 | `TBD`; normal SQL access does not earn this point. |
+| Backend as microservices | 2 | The main backend, AI/RAG service, and code-checking service have separate jobs and communicate through REST APIs. |
+| ORM | 1 | SQLAlchemy in the AI/RAG service. |
 | GitHub OAuth | 1 | Selected. Email and password login remains mandatory. |
 | Complete RAG | 2 | Core feature: large exercise library, retrieval, and a grounded answer. |
 | Complete LLM interface | 2 | Provisional; must also provide streaming, errors, and rate limiting. |

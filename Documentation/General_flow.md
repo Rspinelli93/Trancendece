@@ -2,32 +2,42 @@
 
 The application has three main paths. Each path starts in the frontend, passes through the backend, and returns a clear result.
 
+The backend is divided into three services:
+
+- **Main backend:** accounts, permissions, attempts, reports, progress, and the main application routes.
+- **AI/RAG service:** exercise storage, vectors, exercise search, and LLM selection.
+- **Code-checking service:** compiler tests and submission results.
+
+These services send JSON to each other through REST APIs. Each service has one clear job.
+
 ## 1. A student asks for an exercise
 
 1. The student chooses a level and writes what they want to learn.
 2. The frontend sends this request to the main backend.
-3. RAG searches the enabled exercises at that level.
-4. The LLM receives only the closest exercises and chooses one existing ID.
-5. The frontend shows the chosen exercise and the reason for the choice.
+3. The main backend sends checked JSON to the AI/RAG service.
+4. RAG searches the enabled exercises at that level.
+5. The LLM receives only the closest exercises and chooses one existing ID.
+6. The AI/RAG service returns the match to the main backend.
+7. The frontend shows the chosen exercise and the reason for the choice.
 
-If there is no close match, the student receives a simple “no exercise found” response. The LLM cannot create a new exercise.
+If there is no close match, the student receives a simple “no exercise found” response. If PostgreSQL, the vector model, or the LLM fails, the student receives a temporary service error instead. The LLM cannot create a new exercise.
 
 ## 2. A student submits C code
 
 1. The frontend sends the exercise ID and the student's code to the backend.
-2. The backend loads the private tests for that exercise.
-3. The code checker sends the temporary code to the isolated C runner.
-4. The runner compiles it, runs every test, and returns a result.
-5. The database saves only the attempt information. The submitted code is discarded.
+2. The main backend asks the AI/RAG service for the private exercise tests.
+3. The main backend sends the temporary code and tests to the code-checking service.
+4. The isolated runner compiles the code, runs every test, and returns a result.
+5. The main backend saves only the attempt information in its own tables. The submitted code is discarded.
 6. The frontend shows a simple success or failure result.
 
 ## 3. An admin manages exercises
 
 The admin page supports only upload, search, reports, and disabling exercises.
 
-For an upload, the backend checks the JSON, tests the reference solution, and creates the RAG vector. The exercise is stored only if every step succeeds.
+For an upload, the main backend checks the JSON, the code-checking service tests the reference solution, and the AI/RAG service creates the vector and stores the exercise. The exercise is stored only if every step succeeds.
 
-For an existing exercise, the backend searches the database, loads its reports, or changes its status to `disabled`.
+For an existing exercise, the main backend asks the AI/RAG service to search or disable it. Reports stay in the main backend tables.
 
 ## Information that stays private
 
@@ -46,7 +56,7 @@ flowchart LR
         F1["1. SEND A LEARNING REQUEST<br/>Level + what to practise<br/>(Student)"]
         F2["2. SEND THE REQUEST<br/>Check the form<br/>(Frontend)"]
         F3["3. CHECK THE REQUEST<br/>Confirm login and format<br/>(Main backend)"]
-        F4["4. FIND CLOSE EXERCISES<br/>Search enabled exercises<br/>(RAG + PostgreSQL + pgvector)"]
+        F4["4. FIND CLOSE EXERCISES<br/>Search enabled exercises<br/>(AI/RAG service)"]
         F5["5. CHOOSE ONE RESULT<br/>Use only a returned exercise ID<br/>(LLM)"]
         F6["6. SHOW THE EXERCISE<br/>Or show that no match exists<br/>(Frontend)"]
         F7["RESULT<br/>The student can start the exercise"]
@@ -58,9 +68,9 @@ flowchart LR
         direction TB
         S1["1. SUBMIT C CODE<br/>Exercise ID + temporary code<br/>(Student)"]
         S2["2. SEND THE SUBMISSION<br/>Check the form<br/>(Frontend)"]
-        S3["3. LOAD PRIVATE TESTS<br/>Prepare the checking request<br/>(Main backend)"]
+        S3["3. REQUEST PRIVATE TESTS<br/>Load them through the exercise API<br/>(Main backend → AI/RAG service)"]
         S4["4. CHECK THE CODE<br/>Compile, run and compare outputs<br/>(Code checker + isolated runner)"]
-        S5[("5. SAVE THE ATTEMPT<br/>Result, attempt number and time<br/>(Database)")]
+        S5[("5. SAVE THE ATTEMPT<br/>Result, attempt number and time<br/>(Main backend tables)")]
         S6["6. SHOW THE RESULT<br/>Simple success or failure<br/>(Frontend)"]
         S7["RESULT<br/>The student sees the outcome"]
 
@@ -72,8 +82,8 @@ flowchart LR
         A1["1. CHOOSE AN ACTION<br/>Upload, search, reports or disable<br/>(Admin)"]
         A2["2. SEND THE REQUEST<br/>Use the admin page<br/>(Frontend)"]
         A3["3. CHECK ADMIN ACCESS<br/>Check the request and JSON<br/>(Main backend)"]
-        A4["4. COMPLETE THE ACTION<br/>Validate an upload or manage an exercise<br/>(Checker + RAG + backend)"]
-        A5[("5. READ OR SAVE<br/>Exercises, vectors and reports<br/>(Database)")]
+        A4["4. COMPLETE THE ACTION<br/>Validate an upload or manage an exercise<br/>(Code-checking + AI/RAG services)"]
+        A5[("5. READ OR SAVE<br/>Exercise data or report data<br/>(Table-owning service)")]
         A6["6. SHOW THE RESULT<br/>Success, failure, list or reports<br/>(Frontend)"]
         A7["RESULT<br/>The admin sees what happened"]
 

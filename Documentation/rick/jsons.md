@@ -26,6 +26,10 @@ This is the complete exercise uploaded by an admin.
 
 ### Example
 
+**When:** An admin submits a new exercise.
+
+**Sent from → to:** Admin page → main backend service.
+
 ```json
 {
   "title": "Create ft_strlen",
@@ -55,15 +59,15 @@ This is the complete exercise uploaded by an admin.
 ### Workflow
 
 - **When:** An admin uploads a new exercise.
-- **Communication:** Admin page → backend → tester.
-- **Use:** The tester replaces `/* STUDENT_CODE */` with `reference_solution` and runs every test.
-- **Result:** If the tests and vector creation pass, the validated exercise is stored. Otherwise, the upload fails.
+- **Communication:** Admin page → main backend service.
+- **Use:** The main backend checks the format, creates the exercise ID, and prepares the validation request shown in step 2.
+- **Result:** The upload continues to the code-checking service. Nothing is stored yet.
 - **Discarded:** `reference_solution` is discarded after validation.
 - **Hint:** The backend generates the exercise ID before testing so temporary tester responses and logs can identify the upload. A failed upload is not stored and its ID is never reused. The `hints` field is only learning help shown in the frontend. It is not used by RAG or the tester.
 
-## 2. Request sent to the tester
+## 2. Exercise validation request
 
-The backend creates this request for both exercise validation and student submissions.
+The main backend creates this request to test the admin's reference solution.
 
 ### Format
 
@@ -72,11 +76,15 @@ The backend creates this request for both exercise validation and student submis
 | `exercise_id` | ID of the exercise being tested |
 | `exercise_title` | Exercise name included for readable logs |
 | `exercise_type` | `function` or `program` |
-| `code` | The reference solution or the student's code |
+| `code` | The reference solution |
 | `forbidden_functions` | Functions that cannot be used |
 | `tests` | Compiler code, input, and expected output for every test |
 
 ### Example
+
+**When:** The admin exercise format is valid and an exercise ID has been created.
+
+**Sent from → to:** Main backend service → code-checking service.
 
 ```json
 {
@@ -97,15 +105,15 @@ The backend creates this request for both exercise validation and student submis
 
 ### Workflow
 
-- **When:** Validating an admin upload or correcting a student submission.
-- **Communication:** Backend → tester.
-- **Use:** The tester checks forbidden functions, compiles the code, runs every test, and compares the outputs.
+- **When:** Validating an admin upload.
+- **Communication:** Main backend service → code-checking service.
+- **Use:** The code-checking service checks forbidden functions, compiles the reference solution, runs every test, and compares the outputs.
 - **Stored:** No. This request is temporary.
-- **Hint:** The admin flow uses the reference solution as `code`. The student flow uses the submitted code.
+- **Hint:** The reference solution is placed in `code` only for this validation request.
 
-## 3. Tester response
+## 3. Exercise validation result
 
-This tells the backend whether all tests passed.
+This tells the main backend whether the reference solution passed every test.
 
 ### Format
 
@@ -118,6 +126,10 @@ This tells the backend whether all tests passed.
 
 ### Example
 
+**When:** The code-checking service finishes every test.
+
+**Sent from → to:** Code-checking service → main backend service.
+
 ```json
 {
   "exercise_id": "exercise-123",
@@ -129,13 +141,54 @@ This tells the backend whether all tests passed.
 
 ### Workflow
 
-- **When:** After the tester finishes.
-- **Communication:** Tester → backend.
-- **Use:** The backend accepts or rejects an upload, or shows the result to the student.
-- **Stored:** Only `success` is stored for a student attempt. The complete response is temporary.
+- **When:** After the code-checking service finishes validating the reference solution.
+- **Communication:** Code-checking service → main backend service.
+- **Use:** A failure rejects the upload. A success continues to step 4.
+- **Stored:** No. The complete response is temporary.
 - **Hint:** The ID and title make temporary logs easier to understand. Private expected outputs must not be included in the error shown to the student.
 
-## 4. Validated exercise stored in the database
+## 4. Validated exercise sent to the AI/RAG service
+
+The reference solution has passed. The main backend now sends the exercise data needed for vector creation and storage.
+
+### Format
+
+The format contains the generated ID and all exercise fields except the discarded reference solution.
+
+### Example
+
+**When:** The exercise validation result has `success: true`.
+
+**Sent from → to:** Main backend service → AI/RAG service.
+
+```json
+{
+  "id": "exercise-123",
+  "title": "Create ft_strlen",
+  "exercise_type": "function",
+  "level": 1,
+  "tags": ["strings", "loops", "strlen"],
+  "description": "Create a function that returns the length of a string.",
+  "starter_code": "int ft_strlen(char *str)\n{\n\n}",
+  "hints": ["Use a loop", "Stop at the null character"],
+  "forbidden_functions": ["strlen"],
+  "tests": [
+    {
+      "compiler_code": "#include <stdio.h>\n/* STUDENT_CODE */\nint main(void) { printf(\"%d\\n\", ft_strlen(\"hola\")); }",
+      "input": "",
+      "expected_output": "4\n"
+    }
+  ]
+}
+```
+
+### Workflow
+
+- **Use:** The AI/RAG service checks the JSON, creates the embedding, adds `status: enabled`, and prepares the database row.
+- **Stored:** Not yet. Storage happens in step 5.
+- **Discarded:** The reference solution is not sent because its validation work is finished.
+
+## 5. Validated exercise stored in the database
 
 This is created only after the reference solution passes every test and the vector is created.
 
@@ -157,6 +210,10 @@ This is created only after the reference solution passes every test and the vect
 | `embedding` | Vector used by RAG to find the exercise |
 
 ### Example
+
+**When:** The reference solution and vector creation have both succeeded.
+
+**Sent from → to:** AI/RAG service → PostgreSQL.
 
 ```json
 {
@@ -184,29 +241,65 @@ This is created only after the reference solution passes every test and the vect
 ### Workflow
 
 - **When:** After upload validation and vector creation succeed.
-- **Communication:** Backend → database.
-- **Use:** The backend displays the public fields, the tester uses the private tests, and RAG uses the embedding.
+- **Communication:** AI/RAG service → database.
+- **Use:** The AI/RAG service returns public fields, provides private tests to the main backend, and uses the embedding for RAG.
 - **Stored:** Yes.
 - **Hint:** The frontend receives `hints`. `tests`, forbidden checks, expected outputs, and the embedding are never sent to the student page.
 
-## 5. Student submission
+## 6. Exercise storage result
 
-The student sends the exercise ID, exercise title, and their code.
+The AI/RAG service tells the main backend whether vector creation and database storage succeeded.
+
+### Format
+
+| Field | Meaning |
+| --- | --- |
+| `success` | Whether the exercise was stored |
+| `exercise_id` | Exercise ID |
+| `exercise_title` | Exercise name for readable logs |
+| `error` | Safe error message; empty after success |
+
+### Example
+
+**When:** The AI/RAG service finishes vector creation and storage.
+
+**Sent from → to:** AI/RAG service → main backend service.
+
+```json
+{
+  "success": true,
+  "exercise_id": "exercise-123",
+  "exercise_title": "Create ft_strlen",
+  "error": null
+}
+```
+
+### Workflow
+
+- **Use:** The main backend shows the final upload result to the admin.
+- **Stored:** No. This response is temporary.
+- **Hint:** If vector creation or storage fails, `success` is `false` and the exercise is not stored.
+
+## 7. Student submission
+
+The student sends the exercise ID and their code. The main backend does not trust an exercise title from the frontend.
 
 ### Format
 
 | Field | Meaning |
 | --- | --- |
 | `exercise_id` | Exercise being answered |
-| `exercise_title` | Exercise name included for readable logs |
 | `code` | Student's C code |
 
 ### Example
 
+**When:** A student presses Submit.
+
+**Sent from → to:** Student frontend → main backend service.
+
 ```json
 {
   "exercise_id": "exercise-123",
-  "exercise_title": "Create ft_strlen",
   "code": "int ft_strlen(char *str) { int i = 0; while (str[i]) i++; return i; }"
 }
 ```
@@ -215,11 +308,121 @@ The student sends the exercise ID, exercise title, and their code.
 
 - **When:** The student presses Submit.
 - **Communication:** Student page → backend.
-- **Use:** The backend finds the exercise, creates the tester request, and sends it to the tester.
-- **Stored:** The code is discarded after testing. Only the attempt result is stored.
-- **Hint:** `user_id` is taken from the login session. The backend checks the exercise ID and uses the title stored in the database before creating logs or tester requests.
+- **Use:** The main backend gets `user_id` from the login session and requests the trusted exercise data shown in step 8.
+- **Stored:** Not yet. The code stays temporary.
+- **Hint:** The exercise title and private tests must come from the AI/RAG service, not from the frontend.
 
-## 6. Exercise attempt stored in the database
+## 8. Request for private exercise data
+
+The main backend asks for the data needed to test the submission.
+
+### Example
+
+**When:** The main backend accepts the student submission format.
+
+**Sent from → to:** Main backend service → AI/RAG service.
+
+```json
+{
+  "exercise_id": "exercise-123"
+}
+```
+
+### Workflow
+
+- **Use:** Find the enabled exercise and its private tests.
+- **Stored:** No.
+
+## 9. Private exercise data returned
+
+The AI/RAG service returns the trusted testing information.
+
+### Example
+
+**When:** The exercise exists and is enabled.
+
+**Sent from → to:** AI/RAG service → main backend service.
+
+```json
+{
+  "exercise_id": "exercise-123",
+  "exercise_title": "Create ft_strlen",
+  "exercise_type": "function",
+  "forbidden_functions": ["strlen"],
+  "tests": [
+    {
+      "compiler_code": "#include <stdio.h>\n/* STUDENT_CODE */\nint main(void) { printf(\"%d\\n\", ft_strlen(\"hola\")); }",
+      "input": "",
+      "expected_output": "4\n"
+    }
+  ]
+}
+```
+
+### Workflow
+
+- **Use:** The main backend combines this trusted data with the temporary student code.
+- **Stored:** No. This response is temporary.
+- **Private:** This JSON never goes to the frontend.
+
+## 10. Student code sent to the code-checking service
+
+The main backend creates the complete checking request.
+
+### Example
+
+**When:** The private exercise data has been returned.
+
+**Sent from → to:** Main backend service → code-checking service.
+
+```json
+{
+  "exercise_id": "exercise-123",
+  "exercise_title": "Create ft_strlen",
+  "exercise_type": "function",
+  "code": "int ft_strlen(char *str) { int i = 0; while (str[i]) i++; return i; }",
+  "forbidden_functions": ["strlen"],
+  "tests": [
+    {
+      "compiler_code": "#include <stdio.h>\n/* STUDENT_CODE */\nint main(void) { printf(\"%d\\n\", ft_strlen(\"hola\")); }",
+      "input": "",
+      "expected_output": "4\n"
+    }
+  ]
+}
+```
+
+### Workflow
+
+- **Use:** Check forbidden functions, compile the student code, run every test, and compare the output.
+- **Stored:** No. The code and tests are temporary.
+
+## 11. Student submission result
+
+The code-checking service returns the result before anything is saved as an attempt.
+
+### Example
+
+**When:** The code-checking service finishes the submission tests.
+
+**Sent from → to:** Code-checking service → main backend service.
+
+```json
+{
+  "exercise_id": "exercise-123",
+  "exercise_title": "Create ft_strlen",
+  "success": true,
+  "error": null
+}
+```
+
+### Workflow
+
+- **Use:** Show a safe result to the student and prepare the attempt record.
+- **Stored:** Only the attempt fields shown in step 12 are stored.
+- **Hint:** Student code, private tests, and the complete compiler response are discarded.
+
+## 12. Exercise attempt stored in the database
 
 One record represents one submitted attempt.
 
@@ -234,6 +437,10 @@ One record represents one submitted attempt.
 | `time_taken` | Time spent before submission; the exact measuring method is still undecided |
 
 ### Example
+
+**When:** The code-checking service returns the submission result.
+
+**Sent from → to:** Main backend service → PostgreSQL.
 
 ```json
 {
@@ -253,7 +460,7 @@ One record represents one submitted attempt.
 - **Stored:** Yes.
 - **Hint:** Student code, compiler errors, and dates are not stored.
 
-## 7. Student exercise report
+## 13. Student exercise report
 
 The student reports a problem with an exercise.
 
@@ -265,6 +472,10 @@ The student reports a problem with an exercise.
 | `report` | Message with a maximum of 100 characters |
 
 ### Example
+
+**When:** A student presses Report exercise.
+
+**Sent from → to:** Student frontend → main backend service. The main backend then stores it in PostgreSQL.
 
 ```json
 {
@@ -281,7 +492,7 @@ The student reports a problem with an exercise.
 - **Stored:** One database row per report with `exercise_id`, `user_id`, and `report`.
 - **Hint:** The backend obtains `user_id` from the login session. It does not store the username in the report.
 
-## 8. Reports shown to the admin
+## 14. Reports shown to the admin
 
 The backend groups report rows by user when displaying them.
 
@@ -294,6 +505,10 @@ The backend groups report rows by user when displaying them.
 | `reports` | All messages sent by that user for this exercise |
 
 ### Example
+
+**When:** An admin opens the reports for one exercise.
+
+**Sent from → to:** Main backend service → admin frontend.
 
 ```json
 [
@@ -318,6 +533,97 @@ The backend groups report rows by user when displaying them.
 - **Stored:** This grouped JSON is not stored. It is built from individual report rows.
 - **Hint:** Loading the username from the users table keeps it correct if the user changes their name.
 
+## 15. Learning request sent to the AI/RAG service
+
+The main backend sends the student's level and request after checking the login and form.
+
+### Format
+
+| Field | Meaning |
+| --- | --- |
+| `level` | Selected level: `1`, `2`, or `3` |
+| `query` | What the student wants to learn |
+
+### Example
+
+**When:** A logged-in student sends a learning request.
+
+**Sent from → to:** Main backend service → AI/RAG service.
+
+```json
+{
+  "level": 2,
+  "query": "I want to practise changing pointers inside functions."
+}
+```
+
+### Workflow
+
+- **Communication:** Main backend service → AI/RAG service.
+- **Use:** Create the request vector, search enabled exercises, and ask the LLM to choose from valid matches.
+- **Stored:** No.
+
+## 16. Exercise match or no match
+
+A match returns one existing exercise ID:
+
+**When:** RAG finds valid candidates and the LLM chooses one.
+
+**Sent from → to:** AI/RAG service → main backend service.
+
+```json
+{
+  "matched": true,
+  "exercise_id": "exercise-123",
+  "exercise_title": "Change a pointer from a function",
+  "reason": "This exercise practises changing a pointer through a function."
+}
+```
+
+If no result is close enough:
+
+**When:** The search finishes correctly but finds no suitable exercise.
+
+**Sent from → to:** AI/RAG service → main backend service.
+
+```json
+{
+  "matched": false,
+  "exercise_id": null,
+  "reason": "No suitable exercise was found for your request."
+}
+```
+
+### Workflow
+
+- **Communication:** AI/RAG service → main backend service → frontend.
+- **Stored:** No.
+- **Hint:** A no-match response means the search worked but found nothing suitable.
+
+## 17. AI/RAG service error
+
+A technical failure returns a safe error:
+
+**When:** PostgreSQL, the vector model, or the LLM fails.
+
+**Sent from → to:** AI/RAG service → main backend service.
+
+```json
+{
+  "success": false,
+  "error_code": "SERVICE_UNAVAILABLE",
+  "message": "The exercise service is temporarily unavailable.",
+  "request_id": "request-123"
+}
+```
+
+### Workflow
+
+- **When:** PostgreSQL, the vector model, or the LLM fails.
+- **Communication:** AI/RAG service → main backend service → frontend.
+- **Stored:** The response is not stored. The request ID and technical error go to the logs.
+- **Hint:** A technical failure must not be returned as “no exercise found.”
+
 ---
 
 # Users
@@ -336,6 +642,10 @@ A student creates an account with a username, email, password, and predefined av
 | `avatar` | ID of one predefined avatar |
 
 ### Example
+
+**When:** A student submits the local registration form.
+
+**Sent from → to:** Registration frontend → main backend service.
 
 ```json
 {
@@ -367,6 +677,10 @@ A local user can log in with either their username or email.
 
 ### Example
 
+**When:** A local user submits the login form.
+
+**Sent from → to:** Login frontend → main backend service.
+
 ```json
 {
   "login": "rick",
@@ -396,6 +710,10 @@ GitHub verifies the person and returns their GitHub identity to the backend.
 | `avatar` | One predefined avatar chosen for our platform |
 
 ### Example
+
+**When:** GitHub verifies a first login and the new account is ready to be stored.
+
+**Sent from → to:** Main backend service → PostgreSQL.
 
 ```json
 {
@@ -436,6 +754,10 @@ One record represents one local or GitHub account.
 
 ### Local-user example
 
+**When:** A local registration or accepted profile update is saved.
+
+**Sent from → to:** Main backend service → PostgreSQL.
+
 ```json
 {
   "id": "user-1",
@@ -453,6 +775,10 @@ One record represents one local or GitHub account.
 ```
 
 ### GitHub-user example
+
+**When:** A first GitHub login is accepted and saved.
+
+**Sent from → to:** Main backend service → PostgreSQL.
 
 ```json
 {
@@ -494,6 +820,10 @@ All fields are optional. Only the fields being changed are sent.
 
 ### Example
 
+**When:** A user saves changes to their profile.
+
+**Sent from → to:** Profile frontend → main backend service.
+
 ```json
 {
   "username": "new-rick",
@@ -527,6 +857,10 @@ Private login information is removed before sending a user to the frontend.
 
 ### Example
 
+**When:** Login succeeds or a user opens a profile.
+
+**Sent from → to:** Main backend service → frontend.
+
 ```json
 {
   "id": "user-1",
@@ -552,7 +886,7 @@ Private login information is removed before sending a user to the frontend.
 - **Known GitHub ID:** If `github_id` already exists, log in to that account.
 - **Username already used:** A matching username alone does not prove it is the same person. A new GitHub user must choose another username.
 - **GitHub email already used by a local account:** Reject the GitHub registration. Accounts are not joined automatically.
-- **Uppercase differences:** `Rick` and `rick` count as the same username. Emails follow the same rule.
+- **Uppercase differences:** `Alex` and `alex` count as the same username. Emails follow the same rule.
 - **Profile changes:** A new username or email is accepted only when it is still unique.
 - **Disabled user:** Block login but keep attempts, reports, score, MMR, and badges.
 - **Admin:** There is only one admin. It is created during database setup and cannot be disabled through the website. Avatar, score, MMR, and badges are empty for this account.

@@ -1,40 +1,42 @@
-# My technology guide
+# AI/RAG technology guide
 
-My part has three jobs:
+The AI/RAG service has three jobs:
 
-1. store the platform data;
+1. store and retrieve exercises;
 2. find exercises that match a student's request;
 3. ask an LLM to choose from those matches.
 
-I use one PostgreSQL database. Normal data and exercise vectors live in the same database.
+The platform uses one PostgreSQL database. The main backend service owns users, attempts, and reports. The AI/RAG service owns exercises and their vectors.
 
 The complete path is:
 
-> JSON request → FastAPI and Pydantic → Python → Psycopg and SQL → PostgreSQL and pgvector → Sentence Transformers → LLM → JSON response
+> JSON request → FastAPI and Pydantic → Python → SQLAlchemy → Psycopg → PostgreSQL and pgvector → Sentence Transformers → LLM → JSON response
 
 ## Confirmed technologies
 
-| Technology | What I use it for |
+| Technology | Use |
 | --- | --- |
-| Python | Write my database, search, RAG, and LLM code |
+| Python | Write the exercise database, search, RAG, and LLM code |
 | HTTP and JSON | Communicate with the main backend |
 | FastAPI | Create the internal addresses that receive and return JSON |
 | Pydantic | Check that JSON has the expected fields and types |
-| PostgreSQL | Store users, exercises, attempts, and reports |
+| PostgreSQL | Store the platform data in one database |
 | SQL | Create tables and read or change rows |
-| JSONB | Store lists and nested data such as tests, tags, hints, and badges |
-| Psycopg | Let Python send SQL to PostgreSQL |
+| JSONB | Store exercise lists such as tests, tags, and hints |
+| SQLAlchemy | Read and write PostgreSQL through Python objects |
+| Alembic | Create and update the AI/RAG database tables |
+| Psycopg | Connect SQLAlchemy to PostgreSQL |
 | Sentence Transformers | Turn text into vectors |
 | pgvector | Store vectors and find similar exercises |
 | RAG | Retrieve trusted exercises before asking the LLM |
 
-The LLM provider, model, and Python library are still `TBD`. The final database migration tool is also `TBD`; numbered SQL files are enough while learning the first version.
+The LLM provider, model, and Python library are still `TBD`.
 
 ## 1. Python
 
-**What it is:** The programming language used for my service.
+**What it is:** The programming language used by the AI/RAG service.
 
-**My use:** Control the database work, create vectors, search exercises, call the LLM, and prepare JSON responses.
+**Use in the AI/RAG service:** Control exercise storage, create vectors, search exercises, call the LLM, and prepare JSON responses.
 
 **Learn first:**
 
@@ -51,7 +53,7 @@ The LLM provider, model, and Python library are still `TBD`. The final database 
 
 **What they are:** PostgreSQL is the database. SQL is the language used to work with it.
 
-**My use:** Store users, exercises, attempts, and reports in related tables.
+**Use in the AI/RAG service:** Understand the complete database structure and store exercises and vectors.
 
 **Learn first:**
 
@@ -61,35 +63,38 @@ The LLM provider, model, and Python library are still `TBD`. The final database 
 - `INSERT`, `SELECT`, `UPDATE`, and `JOIN`;
 - transactions;
 - simple indexes;
-- numbered files for database changes.
+- migrations for database changes.
 
 **JSONB:** Use it for real lists or nested values, such as tests and tags. Normal fields and table relationships should remain normal columns.
 
-**First practice:** Create the four tables, add one user and one exercise, then save and read one attempt.
+**First practice:** Create an exercise table, add one exercise, and read it again.
 
-## 3. Psycopg
+## 3. SQLAlchemy, Alembic, and Psycopg
 
-**What it is:** The Python library that communicates with PostgreSQL.
+**What they are:** SQLAlchemy is the ORM used by Python. Alembic manages database changes. Psycopg connects SQLAlchemy to PostgreSQL.
 
-**My use:** Send SQL from Python and receive database results.
+**Use in the AI/RAG service:** Describe the exercise table, save and retrieve exercises, and apply database changes in the same order on every computer.
 
 **Learn first:**
 
-- opening and closing a connection;
-- parameterized queries;
+- SQLAlchemy models, sessions, and basic queries;
+- adding, reading, updating, and filtering rows;
 - committing and rolling back a transaction;
-- reading returned rows;
-- connection pools.
+- creating an Alembic migration;
+- running `alembic upgrade head`;
+- the PostgreSQL connection address.
 
-**Main rule:** Always pass values as query parameters. Never join user text directly into an SQL command.
+**Main rule:** Use one transaction for one complete database change. If it fails, roll it back so incomplete data is not saved.
 
-**First practice:** Insert an exercise from Python and read it back using its ID.
+**First practice:** Create the exercise model, run its migration, save one exercise, and read it back using its ID.
 
 ## 4. HTTP and JSON
 
 **What they are:** HTTP carries requests between services. JSON is the format of the information inside those requests.
 
-**My use:** The main backend sends checked JSON to my Python service. My service returns checked JSON.
+**Use in the AI/RAG service:** The main backend sends checked JSON to the Python service. The service returns checked JSON.
+
+This is required by the microservices plan because the main backend and AI/RAG service are separate programs. JSON is the message format; HTTP is how that message travels between them.
 
 **Learn first:**
 
@@ -105,7 +110,7 @@ The LLM provider, model, and Python library are still `TBD`. The final database 
 
 **What they are:** FastAPI creates the Python web service. Pydantic describes and checks the data accepted by each route.
 
-**My use:** Receive database requests, validated exercises, and student learning requests from the main backend.
+**Use in the AI/RAG service:** Receive validated exercises and student learning requests from the main backend service.
 
 **Learn first:**
 
@@ -123,7 +128,7 @@ The LLM provider, model, and Python library are still `TBD`. The final database 
 
 **What they are:** Sentence Transformers turns text into a fixed-size list of numbers. This list is called an embedding or vector. Texts with similar meanings should have similar vectors.
 
-**My use:** Create vectors from exercise information and student requests.
+**Use in the AI/RAG service:** Create vectors from exercise information and student requests.
 
 **Learn first:**
 
@@ -140,7 +145,7 @@ Changing the model later means recreating every stored exercise vector. The exac
 
 **What it is:** A PostgreSQL extension that stores and compares vectors.
 
-**My use:** Filter enabled exercises by level and return the exercises whose vectors are closest to the student's request.
+**Use in the AI/RAG service:** Filter enabled exercises by level and return the exercises whose vectors are closest to the student's request.
 
 **Learn first:**
 
@@ -159,7 +164,7 @@ Start with a normal vector search. HNSW or IVFFlat indexes are useful only when 
 
 **What it is:** RAG first retrieves trusted information. It then gives that information to an LLM so the answer stays connected to existing data.
 
-**My use:** Retrieve existing exercises. The LLM may choose only one returned exercise ID and explain the choice.
+**Use in the AI/RAG service:** Retrieve existing exercises. The LLM may choose only one returned exercise ID and explain the choice.
 
 **Learn first:**
 
@@ -176,7 +181,7 @@ Start with a normal vector search. HNSW or IVFFlat indexes are useful only when 
 
 **What it is:** A service interface that sends a prompt to a language model and returns generated text.
 
-**My use:** Choose from the retrieved exercise IDs and write a short reason.
+**Use in the AI/RAG service:** Choose from the retrieved exercise IDs and write a short reason.
 
 **Learn after the RAG search works:**
 
@@ -194,8 +199,8 @@ Start with a normal vector search. HNSW or IVFFlat indexes are useful only when 
 ## Learning order
 
 1. Learn basic Python and work with dictionaries that look like our JSON.
-2. Create the PostgreSQL tables with SQL.
-3. Read and write those tables from Python with Psycopg.
+2. Learn the PostgreSQL table structure and basic SQL.
+3. Create the exercise model and an Alembic migration with SQLAlchemy.
 4. Put one database action behind a FastAPI route checked by Pydantic.
 5. Create embeddings for a few exercises.
 6. Store and search them with pgvector.
@@ -204,7 +209,7 @@ Start with a normal vector search. HNSW or IVFFlat indexes are useful only when 
 9. Connect the service to the main backend.
 10. Test valid, invalid, missing, failed-service, and simultaneous requests.
 
-## What I do not need yet
+## Not needed yet
 
 - A second vector database such as Pinecone or Weaviate. pgvector keeps the vectors in PostgreSQL.
 - LangChain or LlamaIndex. This first RAG flow is small enough to write directly.
@@ -215,8 +220,6 @@ Start with a normal vector search. HNSW or IVFFlat indexes are useful only when 
 
 ## Decisions to keep clear
 
-The main backend and my FastAPI service should not both write the same tables independently. The team needs one clear owner for every write path.
+The main backend service owns users, progress, attempts, and reports. The AI/RAG service owns exercises and vectors. The code-checking service does not access the application database.
 
-Raw SQL through Psycopg does not satisfy the planned ORM module. If the team keeps that point, it must select and use an ORM separately.
-
-The database work supports mandatory requirements and gives no module points by itself. The planned complete RAG module is worth 2 points. The separate LLM-interface module remains provisional because the subject also requires streaming, error handling, and rate limiting.
+SQLAlchemy is the selected ORM for the AI/RAG service. The ORM module is worth 1 planned point. The backend-as-microservices module is worth 2 points, but only if the three services have clear responsibilities and real REST interfaces. The planned complete RAG module is worth 2 points. The separate LLM-interface module remains provisional because the subject also requires streaming, error handling, and rate limiting.

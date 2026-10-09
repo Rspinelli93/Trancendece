@@ -4,6 +4,8 @@ The responsibilities below follow the application flow: frontend, backend, exerc
 
 Every team member must also contribute to the mandatory core. Product Owner, Project Manager, Technical Lead, and exact pull-request reviewers are still `TBD`.
 
+The backend is split into three services. William leads the main backend, Rick leads the AI/RAG service, and Julien leads the code-checking service with Garance handling its safe execution. The services communicate through REST APIs using JSON.
+
 ## 1. Frontend — Eliott
 
 Eliott leads the student pages, admin page, progress pages, and shared visual components.
@@ -32,13 +34,15 @@ For every reference solution or student submission, this system must:
 4. compare the real output with the expected output;
 5. return one controlled success or failure result.
 
-Garance checks safe execution and runner limits. William checks the backend route. Eliott checks the result shown on the page. Rick checks the exercise and attempt data sent to the database.
+Garance checks safe execution and runner limits. William checks the backend route. Eliott checks the result shown on the page. The AI/RAG service handles exercise data, while the main backend stores attempts.
 
 ## 4. Database, AI, and RAG — Rick
 
 Rick leads the database structure, exercise vectors, RAG search, LLM communication, and the internal Python API.
 
 Julien checks that only valid exercises and IDs enter this flow. Eliott checks what the student sends and receives. William checks how accounts and the main backend use the database.
+
+Rick designs the shared database structure. Normal account, progress, attempt, and report actions pass through the main backend. The AI/RAG service uses the exercise information and vectors needed for search. The code-checking service does not access the application database directly.
 
 ## 5. DevOps and safe execution — Garance
 
@@ -68,17 +72,17 @@ Technologies outside the database and AI work remain `TBD` until next meeting.
 | Main backend and sessions | William | `TBD` |
 | GitHub login | William | GitHub OAuth; library is `TBD` |
 | Exercise checking | Julien | Existing isolated C runner; product is `TBD` |
-| Database | Rick | PostgreSQL, pgvector, JSONB, Psycopg, and SQL |
+| Database and ORM | Rick | PostgreSQL, pgvector, JSONB, SQLAlchemy, Alembic, and Psycopg |
 | AI and RAG API | Rick | Python, FastAPI, and Pydantic |
 | Exercise vectors | Rick | Sentence Transformers |
 | LLM connection | Rick | Provider, model, and Python library are `TBD` |
 | Containers, HTTPS, health, and backups | Garance | `TBD` |
-| Communication format | Everyone | Checked JSON; browser connections use HTTPS |
+| Communication format | Everyone | REST APIs with checked JSON; browser connections use HTTPS |
 
 ## First shared milestones
 
 1. Eliott and William: register, log in, and open the student page.
-2. William and Rick: create and read a user through the agreed database format.
+2. Main backend service: create and read a user in its owned tables.
 3. Julien and Garance: run a prepared C test safely and return a controlled result.
 4. Eliott, William, Julien, and Rick: upload one exercise, validate it, create its vector, store it, and show the result.
 5. Eliott, William, and Rick: send a learning request and display an existing matched exercise.

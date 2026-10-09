@@ -1,10 +1,10 @@
 # Finding an exercise with RAG and the LLM
 
-This path starts when a student describes what they want to learn. It ends when I return an existing exercise ID or explain that no suitable exercise exists.
+This path starts when a student describes what they want to learn. It ends when the AI/RAG service returns an existing exercise ID or explains that no suitable exercise exists.
 
-## What I receive
+## What the service receives
 
-The main backend checks the student's login and sends me:
+The main backend checks the student's login and sends the AI/RAG service:
 
 ```json
 {
@@ -13,23 +13,23 @@ The main backend checks the student's login and sends me:
 }
 ```
 
-I receive the JSON through **FastAPI**.
+The AI/RAG service receives the JSON through **FastAPI**.
 
 ## Diagram
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"background":"#fffdf7","primaryTextColor":"#1f2937","lineColor":"#84a98c","clusterBkg":"#f7fee7","clusterBorder":"#86efac"}}}%%
 flowchart TD
-    Key["LEGEND / HOW TO READ THIS MAP<br/>Rounded box = action<br/>Diamond = yes-or-no decision<br/>Database shape = stored information<br/>Gray arrow = work before or after Rick<br/>Orange arrow = enters Rick's work<br/>Soft green arrow = work inside Rick's part<br/>Dark green arrow = leaves Rick's work"]
+    Key["LEGEND / HOW TO READ THIS MAP<br/>Rounded box = action<br/>Diamond = yes-or-no decision<br/>Database shape = stored information<br/>Gray arrow = another service<br/>Orange arrow = enters the AI/RAG service<br/>Soft green arrow = work inside the service<br/>Dark green arrow = leaves the service"]
 
-    Student["BEFORE RICK: STUDENT REQUEST<br/>The student chooses a level and writes<br/>what they want to learn"]
-    Backend["BEFORE RICK: MAIN BACKEND<br/>Checks the login and sends<br/>{ level, query }"]
+    Student["STUDENT REQUEST<br/>The student chooses a level and writes<br/>what they want to learn"]
+    Backend["MAIN BACKEND SERVICE<br/>Checks the login and sends<br/>{ level, query }"]
 
-    subgraph Rick["RICK'S PART: FIND AND EXPLAIN AN EXERCISE"]
+    subgraph AIService["AI/RAG SERVICE: FIND AND EXPLAIN AN EXERCISE"]
         Receive["1. RECEIVE THE LEARNING REQUEST<br/>Open the internal request<br/>(FastAPI)"]
         Validate{"2. IS THE REQUEST VALID?<br/>Level is 1-3 and text is acceptable<br/>(Pydantic)"}
         QueryVector["3. TURN THE REQUEST INTO NUMBERS<br/>Create a vector representing its meaning<br/>(Sentence Transformers)"]
-        Search["4. SEARCH EXISTING EXERCISES<br/>Same level, enabled status,<br/>and closest vector meanings<br/>(Psycopg + SQL + pgvector)"]
+        Search["4. SEARCH EXISTING EXERCISES<br/>Same level, enabled status,<br/>and closest vector meanings<br/>(SQLAlchemy + pgvector)"]
         Candidates["5. KEEP THE BEST RESULTS<br/>Create a short candidate list<br/>(Python)"]
         GoodMatch{"6. IS THE BEST RESULT CLOSE ENOUGH?<br/>Use a minimum similarity score<br/>(Python threshold)"}
         LLMRequest["7. ASK FOR A FINAL CHOICE<br/>Send only public candidate information<br/>(Python LLM library)"]
@@ -41,8 +41,8 @@ flowchart TD
         DB[("WHERE SEARCH DATA LIVES<br/>Enabled exercises and their vectors<br/>(PostgreSQL + pgvector)")]
     end
 
-    Receiver["AFTER RICK: MAIN BACKEND<br/>Receives the match, no-match, or error"]
-    Load["AFTER RICK: LOAD THE EXERCISE<br/>The main backend uses the returned ID<br/>and sends public data to the student"]
+    Receiver["MAIN BACKEND SERVICE<br/>Receives the match, no-match, or error"]
+    Load["LOAD THE PUBLIC EXERCISE<br/>The main backend requests it from<br/>the AI/RAG service"]
 
     Key ~~~ Student
     Student --> Backend
@@ -57,7 +57,8 @@ flowchart TD
     GoodMatch -->|"No"| NoMatch
     GoodMatch -->|"Yes"| LLMRequest
     LLMRequest --> LLM
-    LLM --> Check
+    LLM -->|"Answer"| Check
+    LLM -->|"Unavailable"| Error
     Check -->|"No"| Error
     Check -->|"Yes"| Found
     Found -->|"Match JSON"| Receiver
@@ -78,50 +79,47 @@ flowchart TD
     class DB storage;
     class Validate,GoodMatch,Check decision;
     class NoMatch,Error error;
-    style Rick fill:#f7fee7,stroke:#86efac,stroke-width:2px,color:#1f2937;
+    style AIService fill:#f7fee7,stroke:#86efac,stroke-width:2px,color:#1f2937;
 
     linkStyle default stroke:#84a98c,stroke-width:2px;
-    linkStyle 2 stroke:#f59e0b,stroke-width:4px;
-    linkStyle 16,17,18 stroke:#15803d,stroke-width:4px;
-    linkStyle 1,19,20 stroke:#94a3b8,stroke-width:2px;
 ```
 
 
 ## 1. Check the request
 
-I verify that the level is `1`, `2`, or `3` and that the written request follows the agreed length and format rules (**Pydantic**).
+The AI/RAG service verifies that the level is `1`, `2`, or `3` and that the written request follows the agreed length and format rules (**Pydantic**).
 
 Invalid requests receive a controlled error.
 
 ## 2. Turn the request into a vector
 
-I use the same embedding model used for the exercises (**Sentence Transformers**). It converts the student's sentence into a vector.
+The service uses the same embedding model used for the exercises (**Sentence Transformers**). It converts the student's sentence into a vector.
 
 Using the same model is necessary because the request vector must be comparable with the exercise vectors.
 
 ## 3. Search the exercise library
 
-I search only exercises that:
+The service searches only exercises that:
 
 - are `enabled`;
 - have the student's selected level;
 - have vectors close to the request vector.
 
-Python sends the search using **Psycopg and SQL**. PostgreSQL compares the vectors using **pgvector**.
+Python sends the search using **SQLAlchemy**. SQLAlchemy connects through **Psycopg**, and PostgreSQL compares the vectors using **pgvector**.
 
-I keep a small list of the closest exercises.
+The service keeps a small list of the closest exercises.
 
 ## 4. Decide whether there is a real match
 
-The closest result is not automatically a good result. I compare its similarity score with a minimum accepted score.
+The closest result is not automatically a good result. The service compares its similarity score with a minimum accepted score.
 
-If it is too low, I return:
+If it is too low, the service returns:
 
 ```json
 {
   "matched": false,
   "exercise_id": null,
-  "reason": "No suitable exercise is available for this request."
+  "reason": "No suitable exercise was found for your request."
 }
 ```
 
@@ -129,7 +127,7 @@ The exact minimum score will be decided by testing real requests.
 
 ## 5. Ask the LLM to choose
 
-When useful matches exist, I send the LLM only their public information:
+When useful matches exist, the service sends the LLM only their public information:
 
 - exercise ID;
 - title;
@@ -143,7 +141,7 @@ This step uses a Python library for the chosen **LLM API**. The provider and mod
 
 ## 6. Check and return the answer
 
-I verify that the LLM returned a valid candidate ID (**Pydantic and Python**). An invented or malformed ID becomes a controlled error.
+The service verifies that the LLM returned a valid candidate ID (**Pydantic and Python**). An invented or malformed ID becomes a controlled error.
 
 A successful response looks like:
 
@@ -156,6 +154,8 @@ A successful response looks like:
 }
 ```
 
-I return this JSON through **FastAPI**. The main backend then loads the complete exercise and sends its public information to the student.
+The AI/RAG service returns this JSON through **FastAPI**. The main backend then requests the exercise's public information from the same service.
+
+If PostgreSQL, the vector model, or the LLM is unavailable, the service returns a temporary error. It does not return the closest exercise and does not call the failure “no match.”
 
 This completes the RAG path: retrieve relevant exercises first, then generate a grounded explanation from that retrieved information.
