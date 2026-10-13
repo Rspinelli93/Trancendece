@@ -15,5 +15,6 @@ def main():
 		chunked_doc = chunking.chunker()
 		chroma.init_chroma_db(collection, chunked_doc)
 	matches = chroma.get_querry_matches(collection, "What is a pointer?", ["memory", "seg_fault", "pointer"], 5)
-	reranker.re_ranker("What is a pointer?", matches)
+	ranks = reranker.re_ranker("What is a pointer?", matches)
+	
 main()

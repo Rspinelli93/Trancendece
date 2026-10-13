@@ -1,106 +1,125 @@
-
 # CrossEncoder Cheatsheet — SentenceTransformers
 
 ## 1. What is a CrossEncoder?
 
 A CrossEncoder evaluates two texts together and assigns a relevance score.
-We use this after the retireval done with Chroma, once we have the user prompt
-and a series of documents retrieved, the re ranker uses a more accurate matching
-algorithm, so we get a better solution.
-This is mostly useful for large amounts of documents, since the vector comparison
-with chroma in those cases can be innacurate, this is a good thing to use.
 
-There are other re-ranking systems by SentenceTransformers, see: **SentenceTransformer, SparseEncoder and MultiVectorEncoder**
+In RAG, it is used **after Chroma retrieval** to rerank the retrieved documents more accurately.
+
+**Workflow:**
+
+1. Chroma retrieves the most relevant document chunks.
+2. CrossEncoder compares the user prompt with each chunk.
+3. Each document receives a relevance score.
+4. Documents are sorted by relevance.
+5. The top K documents are passed to the LLM.
+
+CrossEncoders are generally more computationally expensive than embedding similarity searches, so they are best used on a smaller set of retrieved candidates.
+
+Other SentenceTransformers model types include `SentenceTransformer`, `SparseEncoder`, and `MultiVectorEncoder`, primarily used for different retrieval strategies.
 
 ## 2. Initialization
 
-```python
-from sentence_transformers import CrossEncoder
+`CrossEncoder(model_name_or_path, ...)`
 
-model = CrossEncoder("cross-encoder/ms-marco-MiniLM-L6-v2")
-# There are other cheaper models in terms of memory usage
-```
-
-### Common Initialization Parameters
+Creates a CrossEncoder instance and loads the selected model.
 
 | Parameter | Purpose |
 |---|---|
-| `model_name_or_path` | Model to load from Hugging Face or local storage. |
-| `device` | Execution device (`cpu`, `cuda`, `mps`). |
-| `max_length` | Maximum input token length; longer inputs are truncated. |
-| `num_labels` | Number of output labels. |
-| `trust_remote_code` | Allow custom model code; use only with trusted models. |
+| `model_name_or_path` | Hugging Face model name or local path. |
+| `device` | Processing device: `cpu`, `cuda`, `mps`, or automatic. |
+| `max_length` | Maximum number of input tokens; longer inputs are truncated. |
+| `num_labels` | Number of output labels/scores. |
+| `trust_remote_code` | Allows execution of custom model code. |
 
-## 3. Main Methods
+**Model used:** `cross-encoder/ms-marco-MiniLM-L6-v2`
 
-| Method | Purpose |
-|---|---|
-| `predict()` | Calculate scores for query-document pairs. |
-| `rank()` | Score and rank documents for a query. |
-| `save_pretrained()` | Save the model locally. |
-| `push_to_hub()` | Upload the model to Hugging Face Hub. |
+A relatively lightweight reranking model suitable for retrieval tasks.
 
-## 4. predict()
+## 3. Main Functions
 
-Receives pairs of texts and returns their scores.
+### `predict()`
 
-```python
-pairs = [
-    ("What is a pointer?", "A pointer stores a memory address."),
-    ("What is a pointer?", "A loop repeats instructions.")
-]
+**Purpose:** Calculate relevance scores for query-document pairs without ranking them.
 
-scores = model.predict(pairs)
-```
+**Parameters:**
 
-- Input: List of text pairs.
-- Output: Scores for each pair.
-- Higher scores generally indicate greater relevance.
+- `sentences`: List of `(query, document)` pairs.
+- `batch_size`: Number of pairs processed per batch.
+- `show_progress_bar`: Whether to display progress.
+- `activation_fn`: Function applied to model outputs.
+- `apply_softmax`: Whether to apply softmax to multi-label outputs.
+- `convert_to_numpy`: Return results as NumPy arrays.
+- `convert_to_tensor`: Return results as PyTorch tensors.
 
-## 5. rank()
+**Returns:** Scores in the same order as the input pairs.
 
-Receives a query and a list of documents, then scores and sorts them.
+**When to use:** When you need relevance scores but want to handle sorting yourself.
 
-```python
-documents = [
-    "A pointer stores a memory address.",
-    "A loop repeats instructions.",
-    "Pointers allow indirect memory access."
-]
+### `rank()`
 
-results = model.rank(
-    query="What is a pointer?",
-    documents=documents,
-    top_k=2,
-    return_documents=True
-)
-```
+**Purpose:** Compare one query against multiple documents, score them, and sort by relevance.
 
-- `query`: User's question.
-- `documents`: List of candidate texts.
-- `top_k`: Maximum number of results to return.
-- `return_documents`: Include document text in results.
+**Parameters:**
 
-### Result Structure
+- `query`: User prompt as a string.
+- `documents`: List of document strings.
+- `top_k`: Maximum number of ranked documents returned; `None` returns all.
+- `return_documents`: Include original document text in the results.
+- `batch_size`: Number of query-document pairs processed per batch.
+- `show_progress_bar`: Display ranking progress.
+- `activation_fn`: Function applied to output scores.
+- `apply_softmax`: Whether to apply softmax to multi-label outputs.
 
-Each ranked result contains:
+**Returns:** A list of dictionaries sorted by relevance.
 
-- `corpus_id`: Original document index.
+Each result contains:
+
+- `corpus_id`: Original index of the document.
 - `score`: Relevance score.
-- `text`: Document text, when `return_documents=True`.
+- `text`: Original document content, if `return_documents=True`.
 
-## 6. Important Concepts
+**When to use:** For RAG reranking after Chroma retrieval.
+
+**Important:** `rank()` internally calculates the scores, so calling `predict()` beforehand is unnecessary.
+
+### `save_pretrained()`
+
+**Purpose:** Save the CrossEncoder model locally.
+
+**Main parameters:**
+
+- `save_directory`: Directory where the model is saved.
+- `safe_serialization`: Whether to use the safer `safetensors` format.
+
+**When to use:** When you want to preserve a downloaded or fine-tuned model locally.
+
+### `push_to_hub()`
+
+**Purpose:** Upload the model to Hugging Face Hub.
+
+**Main parameters:**
+
+- `repo_id`: Destination repository.
+- `private`: Whether the repository should be private.
+- `commit_message`: Description of the upload.
+- `token`: Authentication token, when required.
+
+**When to use:** When publishing or sharing a model.
+
+## 4. Important Concepts
 
 | Concept | Explanation |
 |---|---|
-| Reranking | Reordering documents by relevance. |
-| Relevance score | Numerical estimate of how well a document matches the query. |
+| Reranking | Reordering retrieved documents by relevance. |
+| Relevance score | Numerical estimate of query-document relevance. |
 | Query-document pair | Two texts evaluated together. |
-| Batch size | Number of pairs processed per batch. |
-| Truncation | Cutting off text exceeding the model's token limit. |
+| Batch size | Number of pairs processed simultaneously. |
+| Truncation | Cutting inputs that exceed the model's token limit. |
 | Top K | Number of highest-ranked documents retained. |
+| `corpus_id` | Original index of a document in the input list. |
 
-## 7. CrossEncoder vs. Embeddings
+## 5. CrossEncoder vs. Embeddings
 
 | Embedding Model | CrossEncoder |
 |---|---|
@@ -109,13 +128,16 @@ Each ranked result contains:
 | Fast for large-scale retrieval. | Slower but generally more accurate for reranking. |
 | Used for semantic search. | Used for reranking search results. |
 
-## 8. Documentation
+## 6. Documentation
 
-CrossEncoder Usage:
+**CrossEncoder Usage:**
+
 https://sbert.net/docs/cross_encoder/usage/usage.html
 
-CrossEncoder API Reference:
+**CrossEncoder API Reference:**
+
 https://sbert.net/docs/package_reference/cross_encoder/cross_encoder.html
 
-SentenceTransformers Documentation:
+**SentenceTransformers Documentation:**
+
 https://sbert.net/

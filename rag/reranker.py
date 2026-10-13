@@ -8,6 +8,6 @@ def re_ranker(user_prompt, docs):
 	documents = [doc for group in docs["documents"] for doc in group]
 
 	#+ Rank the prompt agains each of the documents selected by Chroma
-	ranks = model.rank(user_prompt, documents)
+	ranks = model.rank(user_prompt, documents, return_documents=True)
 
-	print(ranks)
+	return(ranks)
