@@ -1,4 +1,4 @@
 AGENTS.md
 en.subject.pdf
 .venv
-./rag/chroma_db/*
+rag/chroma_db/*

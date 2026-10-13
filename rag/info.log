@@ -1,2 +1,114 @@
-2026-10-12 21:31:03,223 - WARNING: No ONNX providers provided, defaulting to available providers: ['AzureExecutionProvider', 'CPUExecutionProvider']
-2026-10-12 21:31:03,910 - chroma.py - Querry matches found: Success
+2026-10-13 09:22:46,554 - WARNING: No ONNX providers provided, defaulting to available providers: ['AzureExecutionProvider', 'CPUExecutionProvider']
+2026-10-13 09:22:47,040 - chroma.py - Querry matches found: Success
+2026-10-13 09:22:47,041 - No device provided, using cpu
+2026-10-13 09:22:47,085 - connect_tcp.started host='huggingface.co' port=443 local_address=None timeout=10 socket_options=None
+2026-10-13 09:22:47,178 - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x7553c58491c0>
+2026-10-13 09:22:47,178 - start_tls.started ssl_context=<ssl.SSLContext object at 0x7553c0104f50> server_hostname='huggingface.co' timeout=10
+2026-10-13 09:22:47,235 - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x7553c4fe3aa0>
+2026-10-13 09:22:47,236 - send_request_headers.started request=<Request [b'HEAD']>
+2026-10-13 09:22:47,236 - send_request_headers.complete
+2026-10-13 09:22:47,236 - send_request_body.started request=<Request [b'HEAD']>
+2026-10-13 09:22:47,236 - send_request_body.complete
+2026-10-13 09:22:47,236 - receive_response_headers.started request=<Request [b'HEAD']>
+2026-10-13 09:22:47,374 - receive_response_headers.complete return_value=(b'HTTP/1.1', 404, b'Not Found', [(b'Content-Type', b'text/plain; charset=utf-8'), (b'Content-Length', b'15'), (b'Connection', b'keep-alive'), (b'Date', b'Tue, 13 Oct 2026 07:22:47 GMT'), (b'ETag', b'W/"f-mY2VvLxuxB7KhsoOdQTlMTccuAQ"'), (b'X-Powered-By', b'huggingface-moon'), (b'X-Request-Id', b'Root=1-6acddc47-2d97540251e1f6f17deb22c8;8885cafd-1f65-4300-a8cc-59d7f8d668a2'), (b'RateLimit', b'"resolvers";r=2997;t=41'), (b'RateLimit-Policy', b'"fixed window";"resolvers";q=3000;w=300'), (b'cross-origin-opener-policy', b'same-origin'), (b'Referrer-Policy', b'strict-origin-when-cross-origin'), (b'Access-Control-Max-Age', b'86400'), (b'Access-Control-Allow-Origin', b'https://huggingface.co'), (b'Vary', b'Origin'), (b'Access-Control-Expose-Headers', b'X-Repo-Commit,X-Request-Id,X-Error-Code,X-Error-Message,X-Total-Count,ETag,Link,Accept-Ranges,Content-Range,X-Linked-Size,X-Linked-ETag,X-Xet-Hash'), (b'X-Repo-Commit', b'233902d25c440f23af6f7d6e94d2946bac0bee0a'), (b'Accept-Ranges', b'bytes'), (b'X-Hub-Cache', b'MISS'), (b'X-Error-Code', b'EntryNotFound'), (b'X-Error-Message', b'Entry not found'), (b'X-Cache', b'Error from cloudfront'), (b'Via', b'1.1 05648470f141fa8f78f96e650d89cee6.cloudfront.net (CloudFront)'), (b'X-Amz-Cf-Pop', b'ZRH52-P1'), (b'Alt-Svc', b'h3=":443"; ma=86400'), (b'X-Amz-Cf-Id', b'MIUCBOoOJ3i_YkZw2-RqZnk-ScNBcXVznNrQrokxUq5ixN9FSaDWXQ=='), (b'Strict-Transport-Security', b'max-age=31536000')])
+2026-10-13 09:22:47,375 - HTTP Request: HEAD https://huggingface.co/cross-encoder/ms-marco-MiniLM-L6-v2/resolve/main/modules.json "HTTP/1.1 404 Not Found"
+2026-10-13 09:22:47,375 - receive_response_body.started request=<Request [b'HEAD']>
+2026-10-13 09:22:47,376 - receive_response_body.complete
+2026-10-13 09:22:47,376 - response_closed.started
+2026-10-13 09:22:47,376 - response_closed.complete
+2026-10-13 09:22:47,377 - Could not load 'modules.json' from 'cross-encoder/ms-marco-MiniLM-L6-v2': 404 Client Error. (Request ID: Root=1-6acddc47-2d97540251e1f6f17deb22c8;8885cafd-1f65-4300-a8cc-59d7f8d668a2)
+
+Entry Not Found for url: https://huggingface.co/cross-encoder/ms-marco-MiniLM-L6-v2/resolve/main/modules.json.
+2026-10-13 09:22:47,377 - No modules.json found for cross-encoder/ms-marco-MiniLM-L6-v2, initializing a new CrossEncoder model.
+2026-10-13 09:22:47,378 - send_request_headers.started request=<Request [b'GET']>
+2026-10-13 09:22:47,379 - send_request_headers.complete
+2026-10-13 09:22:47,379 - send_request_body.started request=<Request [b'GET']>
+2026-10-13 09:22:47,379 - send_request_body.complete
+2026-10-13 09:22:47,379 - receive_response_headers.started request=<Request [b'GET']>
+2026-10-13 09:22:47,562 - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'Date', b'Tue, 13 Oct 2026 07:22:47 GMT'), (b'content-encoding', b'gzip'), (b'ETag', b'W/"168e-r/Vr8BM7ahvknEZeKct3HmoT01Y"'), (b'X-Powered-By', b'huggingface-moon'), (b'X-Request-Id', b'Root=1-6acddc47-0123ac112b5a2b113a10c29d;67e9f142-904f-440b-bfcf-90d1cf376626'), (b'RateLimit', b'"api";r=492;t=41'), (b'RateLimit-Policy', b'"fixed window";"api";q=500;w=300'), (b'cross-origin-opener-policy', b'same-origin'), (b'Referrer-Policy', b'strict-origin-when-cross-origin'), (b'Access-Control-Max-Age', b'86400'), (b'Access-Control-Allow-Origin', b'https://huggingface.co'), (b'Vary', b'Origin'), (b'vary', b'Accept-Encoding'), (b'Access-Control-Expose-Headers', b'X-Repo-Commit,X-Request-Id,X-Error-Code,X-Error-Message,X-Total-Count,ETag,Link,Accept-Ranges,Content-Range,X-Linked-Size,X-Linked-ETag,X-Xet-Hash'), (b'X-Cache', b'Miss from cloudfront'), (b'Via', b'1.1 05648470f141fa8f78f96e650d89cee6.cloudfront.net (CloudFront)'), (b'X-Amz-Cf-Pop', b'ZRH52-P1'), (b'Alt-Svc', b'h3=":443"; ma=86400'), (b'X-Amz-Cf-Id', b'jDcvnwpn0-9FwieMm8hAAOkjPIYIflOazIO4R-VOkuRJcGlI8DCDig=='), (b'Strict-Transport-Security', b'max-age=31536000')])
+2026-10-13 09:22:47,563 - HTTP Request: GET https://huggingface.co/api/models/cross-encoder/ms-marco-MiniLM-L6-v2 "HTTP/1.1 200 OK"
+2026-10-13 09:22:47,563 - receive_response_body.started request=<Request [b'GET']>
+2026-10-13 09:22:47,563 - receive_response_body.complete
+2026-10-13 09:22:47,563 - response_closed.started
+2026-10-13 09:22:47,564 - response_closed.complete
+2026-10-13 09:22:47,565 - send_request_headers.started request=<Request [b'GET']>
+2026-10-13 09:22:47,566 - send_request_headers.complete
+2026-10-13 09:22:47,566 - send_request_body.started request=<Request [b'GET']>
+2026-10-13 09:22:47,566 - send_request_body.complete
+2026-10-13 09:22:47,566 - receive_response_headers.started request=<Request [b'GET']>
+2026-10-13 09:22:47,706 - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'Date', b'Tue, 13 Oct 2026 07:22:47 GMT'), (b'content-encoding', b'gzip'), (b'ETag', b'W/"168e-r/Vr8BM7ahvknEZeKct3HmoT01Y"'), (b'X-Powered-By', b'huggingface-moon'), (b'X-Request-Id', b'Root=1-6acddc47-2df43c161b34816426db66a3;939c19cc-c92b-422d-8c45-5a48888c9c5d'), (b'RateLimit', b'"api";r=491;t=41'), (b'RateLimit-Policy', b'"fixed window";"api";q=500;w=300'), (b'cross-origin-opener-policy', b'same-origin'), (b'Referrer-Policy', b'strict-origin-when-cross-origin'), (b'Access-Control-Max-Age', b'86400'), (b'Access-Control-Allow-Origin', b'https://huggingface.co'), (b'Vary', b'Origin'), (b'vary', b'Accept-Encoding'), (b'Access-Control-Expose-Headers', b'X-Repo-Commit,X-Request-Id,X-Error-Code,X-Error-Message,X-Total-Count,ETag,Link,Accept-Ranges,Content-Range,X-Linked-Size,X-Linked-ETag,X-Xet-Hash'), (b'X-Cache', b'Miss from cloudfront'), (b'Via', b'1.1 05648470f141fa8f78f96e650d89cee6.cloudfront.net (CloudFront)'), (b'X-Amz-Cf-Pop', b'ZRH52-P1'), (b'Alt-Svc', b'h3=":443"; ma=86400'), (b'X-Amz-Cf-Id', b'y-Es1zxTijVaL4akKWsDNxsigYDEMI_9WerqCD2rFS-Ja4dyxz-25Q=='), (b'Strict-Transport-Security', b'max-age=31536000')])
+2026-10-13 09:22:47,707 - HTTP Request: GET https://huggingface.co/api/models/cross-encoder/ms-marco-MiniLM-L6-v2 "HTTP/1.1 200 OK"
+2026-10-13 09:22:47,707 - receive_response_body.started request=<Request [b'GET']>
+2026-10-13 09:22:47,707 - receive_response_body.complete
+2026-10-13 09:22:47,708 - response_closed.started
+2026-10-13 09:22:47,708 - response_closed.complete
+2026-10-13 09:22:47,714 - send_request_headers.started request=<Request [b'HEAD']>
+2026-10-13 09:22:47,715 - send_request_headers.complete
+2026-10-13 09:22:47,715 - send_request_body.started request=<Request [b'HEAD']>
+2026-10-13 09:22:47,715 - send_request_body.complete
+2026-10-13 09:22:47,715 - receive_response_headers.started request=<Request [b'HEAD']>
+2026-10-13 09:22:47,859 - receive_response_headers.complete return_value=(b'HTTP/1.1', 404, b'Not Found', [(b'Content-Type', b'text/plain; charset=utf-8'), (b'Content-Length', b'15'), (b'Connection', b'keep-alive'), (b'Date', b'Tue, 13 Oct 2026 07:22:47 GMT'), (b'ETag', b'W/"f-mY2VvLxuxB7KhsoOdQTlMTccuAQ"'), (b'X-Powered-By', b'huggingface-moon'), (b'X-Request-Id', b'Root=1-6acddc47-44336b4e11c401623feecc3b;dacca7d4-7f2b-44a6-8fec-998b4ff67350'), (b'RateLimit', b'"resolvers";r=2996;t=41'), (b'RateLimit-Policy', b'"fixed window";"resolvers";q=3000;w=300'), (b'cross-origin-opener-policy', b'same-origin'), (b'Referrer-Policy', b'strict-origin-when-cross-origin'), (b'Access-Control-Max-Age', b'86400'), (b'Access-Control-Allow-Origin', b'https://huggingface.co'), (b'Vary', b'Origin'), (b'Access-Control-Expose-Headers', b'X-Repo-Commit,X-Request-Id,X-Error-Code,X-Error-Message,X-Total-Count,ETag,Link,Accept-Ranges,Content-Range,X-Linked-Size,X-Linked-ETag,X-Xet-Hash'), (b'X-Repo-Commit', b'233902d25c440f23af6f7d6e94d2946bac0bee0a'), (b'Accept-Ranges', b'bytes'), (b'X-HF-Warning', b'unauthenticated; Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.'), (b'X-Hub-Cache', b'MISS'), (b'X-Error-Code', b'EntryNotFound'), (b'X-Error-Message', b'Entry not found'), (b'X-Cache', b'Error from cloudfront'), (b'Via', b'1.1 05648470f141fa8f78f96e650d89cee6.cloudfront.net (CloudFront)'), (b'X-Amz-Cf-Pop', b'ZRH52-P1'), (b'Alt-Svc', b'h3=":443"; ma=86400'), (b'X-Amz-Cf-Id', b'nuNE5slebwHoSR4dcELRgq5XvTHW52Rvynk9xYiy55AmRgi01dxPrg=='), (b'Strict-Transport-Security', b'max-age=31536000')])
+2026-10-13 09:22:47,860 - HTTP Request: HEAD https://huggingface.co/cross-encoder/ms-marco-MiniLM-L6-v2/resolve/main/adapter_config.json "HTTP/1.1 404 Not Found"
+2026-10-13 09:22:47,860 - receive_response_body.started request=<Request [b'HEAD']>
+2026-10-13 09:22:47,860 - receive_response_body.complete
+2026-10-13 09:22:47,860 - response_closed.started
+2026-10-13 09:22:47,860 - response_closed.complete
+2026-10-13 09:22:47,860 - Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-10-13 09:22:47,862 - send_request_headers.started request=<Request [b'GET']>
+2026-10-13 09:22:47,863 - send_request_headers.complete
+2026-10-13 09:22:47,863 - send_request_body.started request=<Request [b'GET']>
+2026-10-13 09:22:47,863 - send_request_body.complete
+2026-10-13 09:22:47,863 - receive_response_headers.started request=<Request [b'GET']>
+2026-10-13 09:22:48,020 - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'Date', b'Tue, 13 Oct 2026 07:22:47 GMT'), (b'content-encoding', b'gzip'), (b'ETag', b'W/"168e-r/Vr8BM7ahvknEZeKct3HmoT01Y"'), (b'X-Powered-By', b'huggingface-moon'), (b'X-Request-Id', b'Root=1-6acddc47-02b9c95534133a17788f52eb;02775308-ca7b-43b5-b178-773aa37debd2'), (b'RateLimit', b'"api";r=490;t=41'), (b'RateLimit-Policy', b'"fixed window";"api";q=500;w=300'), (b'cross-origin-opener-policy', b'same-origin'), (b'Referrer-Policy', b'strict-origin-when-cross-origin'), (b'Access-Control-Max-Age', b'86400'), (b'Access-Control-Allow-Origin', b'https://huggingface.co'), (b'Vary', b'Origin'), (b'vary', b'Accept-Encoding'), (b'Access-Control-Expose-Headers', b'X-Repo-Commit,X-Request-Id,X-Error-Code,X-Error-Message,X-Total-Count,ETag,Link,Accept-Ranges,Content-Range,X-Linked-Size,X-Linked-ETag,X-Xet-Hash'), (b'X-Cache', b'Miss from cloudfront'), (b'Via', b'1.1 05648470f141fa8f78f96e650d89cee6.cloudfront.net (CloudFront)'), (b'X-Amz-Cf-Pop', b'ZRH52-P1'), (b'Alt-Svc', b'h3=":443"; ma=86400'), (b'X-Amz-Cf-Id', b'Ad67Hk3c3CHU3f10kp2SvGif_0ZcgGJPnFOe9gEW1h2-k9qeKY09Zw=='), (b'Strict-Transport-Security', b'max-age=31536000')])
+2026-10-13 09:22:48,021 - HTTP Request: GET https://huggingface.co/api/models/cross-encoder/ms-marco-MiniLM-L6-v2 "HTTP/1.1 200 OK"
+2026-10-13 09:22:48,022 - receive_response_body.started request=<Request [b'GET']>
+2026-10-13 09:22:48,022 - receive_response_body.complete
+2026-10-13 09:22:48,022 - response_closed.started
+2026-10-13 09:22:48,022 - response_closed.complete
+2026-10-13 09:22:48,025 - send_request_headers.started request=<Request [b'GET']>
+2026-10-13 09:22:48,025 - send_request_headers.complete
+2026-10-13 09:22:48,026 - send_request_body.started request=<Request [b'GET']>
+2026-10-13 09:22:48,026 - send_request_body.complete
+2026-10-13 09:22:48,026 - receive_response_headers.started request=<Request [b'GET']>
+2026-10-13 09:22:48,161 - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'Date', b'Tue, 13 Oct 2026 07:22:48 GMT'), (b'content-encoding', b'gzip'), (b'ETag', b'W/"168e-r/Vr8BM7ahvknEZeKct3HmoT01Y"'), (b'X-Powered-By', b'huggingface-moon'), (b'X-Request-Id', b'Root=1-6acddc48-72827b3610405a46428159b8;35ff4a5b-b3eb-467e-9c64-fd251dbdd0ca'), (b'RateLimit', b'"api";r=489;t=40'), (b'RateLimit-Policy', b'"fixed window";"api";q=500;w=300'), (b'cross-origin-opener-policy', b'same-origin'), (b'Referrer-Policy', b'strict-origin-when-cross-origin'), (b'Access-Control-Max-Age', b'86400'), (b'Access-Control-Allow-Origin', b'https://huggingface.co'), (b'Vary', b'Origin'), (b'vary', b'Accept-Encoding'), (b'Access-Control-Expose-Headers', b'X-Repo-Commit,X-Request-Id,X-Error-Code,X-Error-Message,X-Total-Count,ETag,Link,Accept-Ranges,Content-Range,X-Linked-Size,X-Linked-ETag,X-Xet-Hash'), (b'X-Cache', b'Miss from cloudfront'), (b'Via', b'1.1 05648470f141fa8f78f96e650d89cee6.cloudfront.net (CloudFront)'), (b'X-Amz-Cf-Pop', b'ZRH52-P1'), (b'Alt-Svc', b'h3=":443"; ma=86400'), (b'X-Amz-Cf-Id', b'jebjc6CPKNC21Luox2XTToypgHv_MU7KF9EfCxl5q5yG5gs4PYLm5Q=='), (b'Strict-Transport-Security', b'max-age=31536000')])
+2026-10-13 09:22:48,161 - HTTP Request: GET https://huggingface.co/api/models/cross-encoder/ms-marco-MiniLM-L6-v2 "HTTP/1.1 200 OK"
+2026-10-13 09:22:48,161 - receive_response_body.started request=<Request [b'GET']>
+2026-10-13 09:22:48,170 - receive_response_body.complete
+2026-10-13 09:22:48,171 - response_closed.started
+2026-10-13 09:22:48,171 - response_closed.complete
+2026-10-13 09:22:48,351 - send_request_headers.started request=<Request [b'GET']>
+2026-10-13 09:22:48,351 - send_request_headers.complete
+2026-10-13 09:22:48,351 - send_request_body.started request=<Request [b'GET']>
+2026-10-13 09:22:48,351 - send_request_body.complete
+2026-10-13 09:22:48,351 - receive_response_headers.started request=<Request [b'GET']>
+2026-10-13 09:22:48,496 - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'Date', b'Tue, 13 Oct 2026 07:22:48 GMT'), (b'content-encoding', b'gzip'), (b'ETag', b'W/"168e-r/Vr8BM7ahvknEZeKct3HmoT01Y"'), (b'X-Powered-By', b'huggingface-moon'), (b'X-Request-Id', b'Root=1-6acddc48-4178702a28e246ec5d698610;a8fdc5bf-2e51-4a8a-8cdf-ec90ce52b9b3'), (b'RateLimit', b'"api";r=488;t=40'), (b'RateLimit-Policy', b'"fixed window";"api";q=500;w=300'), (b'cross-origin-opener-policy', b'same-origin'), (b'Referrer-Policy', b'strict-origin-when-cross-origin'), (b'Access-Control-Max-Age', b'86400'), (b'Access-Control-Allow-Origin', b'https://huggingface.co'), (b'Vary', b'Origin'), (b'vary', b'Accept-Encoding'), (b'Access-Control-Expose-Headers', b'X-Repo-Commit,X-Request-Id,X-Error-Code,X-Error-Message,X-Total-Count,ETag,Link,Accept-Ranges,Content-Range,X-Linked-Size,X-Linked-ETag,X-Xet-Hash'), (b'X-Cache', b'Miss from cloudfront'), (b'Via', b'1.1 05648470f141fa8f78f96e650d89cee6.cloudfront.net (CloudFront)'), (b'X-Amz-Cf-Pop', b'ZRH52-P1'), (b'Alt-Svc', b'h3=":443"; ma=86400'), (b'X-Amz-Cf-Id', b'NaIcYdtRwjKjew0lXGeTr5KTatubmve41JFf0-5ihThfj2fLW3c1ww=='), (b'Strict-Transport-Security', b'max-age=31536000')])
+2026-10-13 09:22:48,496 - HTTP Request: GET https://huggingface.co/api/models/cross-encoder/ms-marco-MiniLM-L6-v2 "HTTP/1.1 200 OK"
+2026-10-13 09:22:48,496 - receive_response_body.started request=<Request [b'GET']>
+2026-10-13 09:22:48,507 - receive_response_body.complete
+2026-10-13 09:22:48,508 - response_closed.started
+2026-10-13 09:22:48,508 - response_closed.complete
+2026-10-13 09:22:48,518 - send_request_headers.started request=<Request [b'GET']>
+2026-10-13 09:22:48,518 - send_request_headers.complete
+2026-10-13 09:22:48,518 - send_request_body.started request=<Request [b'GET']>
+2026-10-13 09:22:48,518 - send_request_body.complete
+2026-10-13 09:22:48,518 - receive_response_headers.started request=<Request [b'GET']>
+2026-10-13 09:22:48,663 - receive_response_headers.complete return_value=(b'HTTP/1.1', 404, b'Not Found', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'64'), (b'Connection', b'keep-alive'), (b'Date', b'Tue, 13 Oct 2026 07:22:48 GMT'), (b'ETag', b'W/"40-09f9IAqP13xarAhQxFS2W8rvRkM"'), (b'X-Powered-By', b'huggingface-moon'), (b'X-Request-Id', b'Root=1-6acddc48-41b1d81a19fd2ec622ffd7fd;4556452d-805b-4718-838e-7a1f1f00bea2'), (b'RateLimit', b'"api";r=487;t=40'), (b'RateLimit-Policy', b'"fixed window";"api";q=500;w=300'), (b'cross-origin-opener-policy', b'same-origin'), (b'Referrer-Policy', b'strict-origin-when-cross-origin'), (b'Access-Control-Max-Age', b'86400'), (b'Access-Control-Allow-Origin', b'https://huggingface.co'), (b'Vary', b'Origin'), (b'Access-Control-Expose-Headers', b'X-Repo-Commit,X-Request-Id,X-Error-Code,X-Error-Message,X-Total-Count,ETag,Link,Accept-Ranges,Content-Range,X-Linked-Size,X-Linked-ETag,X-Xet-Hash'), (b'X-Error-Code', b'EntryNotFound'), (b'X-Error-Message', b'additional_chat_templates does not exist on "main"'), (b'X-Cache', b'Error from cloudfront'), (b'Via', b'1.1 05648470f141fa8f78f96e650d89cee6.cloudfront.net (CloudFront)'), (b'X-Amz-Cf-Pop', b'ZRH52-P1'), (b'Alt-Svc', b'h3=":443"; ma=86400'), (b'X-Amz-Cf-Id', b'pU5KIqCZeQqK07bshmN9Epfi1jmFgyvZZfDmNfQtt5wWP1VMaXti_w=='), (b'Strict-Transport-Security', b'max-age=31536000')])
+2026-10-13 09:22:48,664 - HTTP Request: GET https://huggingface.co/api/models/cross-encoder/ms-marco-MiniLM-L6-v2/tree/main/additional_chat_templates?recursive=false&expand=false "HTTP/1.1 404 Not Found"
+2026-10-13 09:22:48,664 - receive_response_body.started request=<Request [b'GET']>
+2026-10-13 09:22:48,664 - receive_response_body.complete
+2026-10-13 09:22:48,664 - response_closed.started
+2026-10-13 09:22:48,664 - response_closed.complete
+2026-10-13 09:22:48,665 - send_request_headers.started request=<Request [b'GET']>
+2026-10-13 09:22:48,666 - send_request_headers.complete
+2026-10-13 09:22:48,666 - send_request_body.started request=<Request [b'GET']>
+2026-10-13 09:22:48,666 - send_request_body.complete
+2026-10-13 09:22:48,666 - receive_response_headers.started request=<Request [b'GET']>
+2026-10-13 09:22:48,806 - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'Date', b'Tue, 13 Oct 2026 07:22:48 GMT'), (b'content-encoding', b'gzip'), (b'ETag', b'W/"153c-GiafvYE0iJyfo3XZijgUY+FDItg"'), (b'X-Powered-By', b'huggingface-moon'), (b'X-Request-Id', b'Root=1-6acddc48-0240f2450805f4d736c62720;e0b8c36b-9c34-4bf2-8499-79299ef9f883'), (b'RateLimit', b'"api";r=486;t=40'), (b'RateLimit-Policy', b'"fixed window";"api";q=500;w=300'), (b'cross-origin-opener-policy', b'same-origin'), (b'Referrer-Policy', b'strict-origin-when-cross-origin'), (b'Access-Control-Max-Age', b'86400'), (b'Access-Control-Allow-Origin', b'https://huggingface.co'), (b'Vary', b'Origin'), (b'vary', b'Accept-Encoding'), (b'Access-Control-Expose-Headers', b'X-Repo-Commit,X-Request-Id,X-Error-Code,X-Error-Message,X-Total-Count,ETag,Link,Accept-Ranges,Content-Range,X-Linked-Size,X-Linked-ETag,X-Xet-Hash'), (b'X-Cache', b'Miss from cloudfront'), (b'Via', b'1.1 05648470f141fa8f78f96e650d89cee6.cloudfront.net (CloudFront)'), (b'X-Amz-Cf-Pop', b'ZRH52-P1'), (b'Alt-Svc', b'h3=":443"; ma=86400'), (b'X-Amz-Cf-Id', b'A_CrDt9hNSwD5LjwPu-PTdmh7iapDmO7zt-KByEDRTDEaGfy3LDEDQ=='), (b'Strict-Transport-Security', b'max-age=31536000')])
+2026-10-13 09:22:48,807 - HTTP Request: GET https://huggingface.co/api/models/cross-encoder/ms-marco-MiniLM-L6-v2/tree/main?recursive=true&expand=false "HTTP/1.1 200 OK"
+2026-10-13 09:22:48,807 - receive_response_body.started request=<Request [b'GET']>
+2026-10-13 09:22:48,808 - receive_response_body.complete
+2026-10-13 09:22:48,808 - response_closed.started
+2026-10-13 09:22:48,808 - response_closed.complete
+2026-10-13 09:22:48,847 - Active modality config: {'text': {'method': 'forward', 'method_output_name': 'logits'}}
+2026-10-13 09:22:52,616 - close.started
+2026-10-13 09:22:52,617 - close.complete

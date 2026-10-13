@@ -1,20 +1,13 @@
-from sentence_transformers import SentenceTransformer
+from sentence_transformers import CrossEncoder
 
+def re_ranker(user_prompt, docs):
+	#+ Load the CrossEncoder model selected
+	model = CrossEncoder("cross-encoder/ms-marco-MiniLM-L6-v2")
 
-# 1. Load a pretrained Sentence Transformer model
-model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+	#+ Turn the list of lists from Chroma into a list of "pre selected" strings
+	documents = [doc for group in docs["documents"] for doc in group]
 
-# The sentences to encode
-sentences = [
-    "The weather is lovely today.",
-    "It's so sunny outside!",
-    "He drove to the stadium.",
-]
+	#+ Rank the prompt agains each of the documents selected by Chroma
+	ranks = model.rank(user_prompt, documents)
 
-# 2. Calculate embeddings by calling model.encode()
-embeddings = model.encode(sentences)
-print(embeddings.shape)
-# [3, 384]
-
-# 3. Calculate the embedding similarities
-similarities = model.similarity(embeddings, embeddings)
+	print(ranks)

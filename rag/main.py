@@ -2,6 +2,7 @@ import logging
 import chunking
 import chromadb
 import chroma
+import reranker
 
 logger = logging.getLogger(__name__)
 chroma_client = chromadb.PersistentClient(path="./chroma_db")
@@ -14,6 +15,5 @@ def main():
 		chunked_doc = chunking.chunker()
 		chroma.init_chroma_db(collection, chunked_doc)
 	matches = chroma.get_querry_matches(collection, "What is a pointer?", ["memory", "seg_fault", "pointer"], 5)
-	print(matches)
-
+	reranker.re_ranker("What is a pointer?", matches)
 main()

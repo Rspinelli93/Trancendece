@@ -31,9 +31,9 @@ def init_chroma_db(collection, chunks):
 
 	#+	Add chunks to the DB (embedding done by chroma)
 	collection.add(
-		documents=texts,
-		ids=ids,
-		metadatas=metadata
+		documents=texts,	# A list of strings
+		ids=ids,			# A list of IDS
+		metadatas=metadata	# A list of {} metadata
 	)
 	logger.debug("chroma.py - DB collection created: Success")
 
@@ -50,7 +50,7 @@ def	get_querry_matches(collection, user_prompt, tips, n_result):
 	queries = [user_prompt] + tips
 	
 	results = collection.query(
-	query_texts=queries,			# Chroma will embed this automatically
+	query_texts=queries,		# Chroma will embed this automatically
 	n_results=n_result			# how many results to return
 	)
 	logger.debug("chroma.py - Querry matches found: Success")

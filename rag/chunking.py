@@ -17,7 +17,7 @@ def chunker():
 	#- INIT THE FILE LOADER
 	#(Check the documentation of PyPDFLoader, many values are set to default in this __init__ call)
 	loader = PyMuPDFLoader(
-		file_path="./C_Book_2nd.pdf",
+		file_path="./docs/C_Book_2nd.pdf",
 		mode="page",
 		extract_images=False
 	)
