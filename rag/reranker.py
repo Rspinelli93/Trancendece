@@ -1,6 +1,15 @@
 from sentence_transformers import CrossEncoder
 
-def re_ranker(user_prompt, docs):
+def re_ranker(user_prompt:str, docs:list[str]):
+	"""
+	Re ranker, will recieve the pre selected chunks and make
+	a second filtering with SentenceTransforemes CrossEncoder model.
+	Args:
+		user_prompt: User prompt string
+		docs: A list of pre selected chunks of string texts
+	Return:
+    	A sorted list with the "corpus_id", "score", and optionally "text" of the documents.
+	"""
 	#+ Load the CrossEncoder model selected
 	model = CrossEncoder("cross-encoder/ms-marco-MiniLM-L6-v2")
 

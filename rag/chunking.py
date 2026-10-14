@@ -10,8 +10,13 @@ logger = logging.getLogger(__name__)
 def chunker():
 	"""
     Function to chunk documentation
-	:Document: an object defined by PyPDFLoader
-    :Return: a list of Document instances
+	Document:
+		An object defined by PyPDFLoader
+		Each Document element:
+			.page_content -> Chunk text
+			.metadata -> Original document metadata
+    Return:
+		A list of Document instances
     """
 
 	#- INIT THE FILE LOADER
@@ -43,7 +48,3 @@ def chunker():
 	return (chunks)
 
 chunker()
-
-#	Each Document element:
-#		.page_content -> Chunk text
-#		.metadata -> Original document metadata

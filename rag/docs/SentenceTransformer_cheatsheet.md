@@ -1,18 +1,11 @@
+
 # CrossEncoder Cheatsheet — SentenceTransformers
 
 ## 1. What is a CrossEncoder?
 
 A CrossEncoder evaluates two texts together and assigns a relevance score.
 
-In RAG, it is used **after Chroma retrieval** to rerank the retrieved documents more accurately.
-
-**Workflow:**
-
-1. Chroma retrieves the most relevant document chunks.
-2. CrossEncoder compares the user prompt with each chunk.
-3. Each document receives a relevance score.
-4. Documents are sorted by relevance.
-5. The top K documents are passed to the LLM.
+In RAG, it is used **after vector retrieval** to rerank the retrieved documents more accurately.
 
 CrossEncoders are generally more computationally expensive than embedding similarity searches, so they are best used on a smaller set of retrieved candidates.
 
@@ -52,7 +45,15 @@ A relatively lightweight reranking model suitable for retrieval tasks.
 - `convert_to_numpy`: Return results as NumPy arrays.
 - `convert_to_tensor`: Return results as PyTorch tensors.
 
-**Returns:** Scores in the same order as the input pairs.
+**Returns:** A NumPy array or PyTorch tensor containing the scores, depending on configuration.
+
+| Value | Type | Description |
+|---|---|---|
+| `scores` | `np.ndarray` or `torch.Tensor` | Relevance scores in the same order as the input pairs. |
+| `scores[0]` | `float` or scalar tensor | Score for the first query-document pair. |
+| `scores[1]` | `float` or scalar tensor | Score for the second query-document pair. |
+
+For a single-output reranking model, each pair receives one score. Higher scores indicate greater relevance.
 
 **When to use:** When you need relevance scores but want to handle sorting yourself.
 
@@ -71,13 +72,37 @@ A relatively lightweight reranking model suitable for retrieval tasks.
 - `activation_fn`: Function applied to output scores.
 - `apply_softmax`: Whether to apply softmax to multi-label outputs.
 
-**Returns:** A list of dictionaries sorted by relevance.
+**Returns:** A list of dictionaries sorted by relevance, highest score first.
 
-Each result contains:
+Each dictionary contains:
 
-- `corpus_id`: Original index of the document.
-- `score`: Relevance score.
-- `text`: Original document content, if `return_documents=True`.
+| Key | Type | Description |
+|---|---|---|
+| `corpus_id` | `int` | Original index of the document in the input list. |
+| `score` | `float` | Relevance score assigned by the CrossEncoder. |
+| `text` | `str` | Original document content, only when `return_documents=True`. |
+
+**Example return value:**
+
+    [
+        {
+            "corpus_id": 2,
+            "score": 8.92,
+            "text": "A pointer stores a memory address."
+        },
+        {
+            "corpus_id": 0,
+            "score": 6.35,
+            "text": "Pointers allow indirect memory access."
+        }
+    ]
+
+**Accessing results:**
+
+- `ranks[0]` — Highest-ranked result.
+- `ranks[0]["corpus_id"]` — Original index of the highest-ranked document.
+- `ranks[0]["score"]` — Relevance score.
+- `ranks[0]["text"]` — Document text, if requested.
 
 **When to use:** For RAG reranking after Chroma retrieval.
 
@@ -92,6 +117,8 @@ Each result contains:
 - `save_directory`: Directory where the model is saved.
 - `safe_serialization`: Whether to use the safer `safetensors` format.
 
+**Returns:** `None`. The model files are written to the specified directory.
+
 **When to use:** When you want to preserve a downloaded or fine-tuned model locally.
 
 ### `push_to_hub()`
@@ -104,6 +131,8 @@ Each result contains:
 - `private`: Whether the repository should be private.
 - `commit_message`: Description of the upload.
 - `token`: Authentication token, when required.
+
+**Returns:** `str` — URL of the uploaded model repository or commit.
 
 **When to use:** When publishing or sharing a model.
 

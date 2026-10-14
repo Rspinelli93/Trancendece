@@ -39,12 +39,16 @@ def init_chroma_db(collection, chunks):
 
 
 
-def	get_querry_matches(collection, user_prompt, tips, n_result):
+def	get_querry_matches(collection, user_prompt:str, tips:list[str], n_result:int):
 	"""
     Function to find matching vectors in chromaDB using querry()
-	:user_prompt: the prompt string
-	:tips: an list of strings given by the excersise being evaluated
-    :Return: a list of size n_result with the matching vectors
+	Args:
+		collection: DB retrieved from chromaDB
+		user_prompt: the prompt string
+		tips: an list of strings given by the excersise being evaluated
+		n_result: number of returned chunks
+    Return:
+		A list of size n_result with the matching vectors
     """
 
 	queries = [user_prompt] + tips
