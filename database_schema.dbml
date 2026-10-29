@@ -1,0 +1,86 @@
+// Paste into https://dbdiagram.io to view or export a diagram.
+
+Table users {
+  id int [pk, increment]
+  username varchar(50) [not null, unique]
+  email varchar(254) [unique]
+  password varchar(255) // Store password hash, never plaintext
+  github varchar(64) [unique]
+  elo int [not null, default: 1000]
+  total_score int [not null, default: 0]
+  level_solo int [not null, default: 1]
+  in_game boolean [not null, default: false]
+}
+
+Table exercises {
+  id int [pk, increment]
+  program boolean [not null]
+  prototype text
+  description text [not null]
+  hints text
+  authorize text
+  pre_body text
+  elo int [not null, default: 0]
+  debug boolean [not null, default: false]
+  pointers boolean [not null, default: false]
+  str_man boolean [not null, default: false]
+  algo boolean [not null, default: false]
+  f_rep boolean [not null, default: false]
+}
+
+Table tests {
+  id int [pk, increment]
+  ex_id int [not null]
+  compiler_code text [not null]
+  expected_output text
+  input text
+  test_code text
+  reference_solution text [not null]
+}
+
+Table games {
+  id int [pk, increment]
+  ex_id int [not null]
+  challenger int [not null] // Player 1
+  victim int [not null] // Player 2
+  challenger_score int [not null, default: 0]
+  victim_score int [not null, default: 0]
+  challenger_attempts int [not null, default: 0]
+  victim_attempts2 int [not null, default: 0]
+  challenger_time bigint // Milliseconds, player 1
+  victim_time bigint // Milliseconds, player 2
+}
+
+Table achievements {
+  id int [pk, increment]
+  user_id int [not null, unique]
+  play_a_game boolean [not null, default: false]
+  play_solo boolean [not null, default: false]
+  finish_solo boolean [not null, default: false]
+  clavier_d_or boolean [not null, default: false]
+  stalk_someone boolean [not null, default: false]
+  win_a_game boolean [not null, default: false]
+  wood boolean [not null, default: false]
+  rust_steel boolean [not null, default: false]
+  tin boolean [not null, default: false]
+  aluminum_foil boolean [not null, default: false]
+}
+
+Table friends {
+  id int [pk, increment]
+  stalker int [not null]
+  followed int [not null]
+
+  indexes {
+    (stalker, followed) [unique]
+  }
+}
+
+// Foreign keys
+Ref: tests.ex_id > exercises.id
+Ref: games.ex_id > exercises.id
+Ref: games.challenger > users.id
+Ref: games.victim > users.id
+Ref: achievements.user_id > users.id
+Ref: friends.stalker > users.id
+Ref: friends.followed > users.id

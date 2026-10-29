@@ -30,7 +30,8 @@ def main():
 	#If not loaded, load, chunck, vectorize, store
 	if not chroma.chroma_is_init(collection):
 		chunked_doc = chunking.chunker()
-		chroma.init_chroma_db(collection, chunked_doc)
+		chroma.init_chroma_db(collection, chunked_doc) #FIND OUT HOW TO INIT THIS ONLY (INIT SCRIPT)
+
 
 	#Get matched from ChromaDB + User prompt + tips
 	matches = chroma.get_querry_matches(collection, user_prompt, tips, 5)

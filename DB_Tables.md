@@ -8,7 +8,6 @@
 | ELO | Int | Can change | 69 | ELO rating of this excersise. Increases when someone does it wrong, decrese when someone does it rigth |
 | program | Bool | 0 or 1 | 0 | Defines whether the user needs to write a main function (1) or recreate a function (0). |
 | prototype_function | String | Can be empty if program is 1 | "size_t ft_strlen(const char *s);" | The function prototype that the student must implement. Can be empty when the exercise requires writing a complete program. |
-| topic | Subquery |  |  | A list of topics associated with the exercise. The abvailable topics will be definded by the 1v1 grid |
 | description | String | No more than 500 characters | "Write a function reproducing the behavior of strlen" | Describes what the user needs to implement. |
 | hints | String | Comma + space separated | "strings, char count, segmentation fault" | A list of hints to help the user solve the exercise. This will be for feeding the LLM ONLY, thats why we dont need a subquerry here. |
 | forbidden_functions | Subquery |  |  | A list of functions that the user is not allowed to use. This is particularly important for the implementation of the tester. |

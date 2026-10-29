@@ -7,16 +7,27 @@ logger = logging.getLogger(__name__)
 def chroma_is_init(collection):
 	"""
     Safecheck to see if the DB was init
-	:collection: the DB collection retrieved (or not) in main
-    :Return: bool to validate
+	Args:
+		collection: the DB collection retrieved (or not) in main
+    Return:
+		bool to validate
     """
 	if collection.count() == 0:
 		return False
 	else:
 		return True
 
-def init_chroma_db(collection, chunks):
-	
+def init_chroma_db(collection, chunks:list):
+	"""
+	Function to init the DB
+	Args:
+		collection: the DB collection retrieved (or not) in main
+		chunks: the chunked documents
+		Each Document element:
+				.page_content -> Chunk text
+				.metadata -> Original document metadata
+    """
+
 	#+	Init the DB
 	# Prepare data to store
 	texts = [doc.page_content for doc in chunks]
