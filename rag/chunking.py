@@ -46,5 +46,3 @@ def chunker():
 	chunks = splitter.split_documents(docs)
 	logger.debug("chunking.py - Docs Splitted")
 	return (chunks)
-
-chunker()

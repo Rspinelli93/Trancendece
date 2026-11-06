@@ -1,18 +1,18 @@
 from langchain_ollama import ChatOllama
 
 llm = ChatOllama(
-    model="llama3.2:3b",
-    #base_url="http://localhost:11434",
+    model="qwen3:0.6b",
+    reasoning=False,
     temperature=0.2,
 	num_ctx=2048,       # Reduce RAM usage
 	num_predict=256,    # Limit response length
 	num_thread=4,       # Use 4 CPU threads
-	num_gpu=0,
+    num_gpu=0,
     top_k=40,
     top_p=0.9,
     repeat_penalty=1.1,
     keep_alive="5m",
-    validate_model_on_init=True
+    validate_model_on_init=True,
 )
 
 system_prompt = """
