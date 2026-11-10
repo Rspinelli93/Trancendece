@@ -7,22 +7,25 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def chunker():
+def chunker(doc, start, end):
 	"""
-    Function to chunk documentation
+    Chunk the desired pdf document
 	Document:
 		An object defined by PyPDFLoader
 		Each Document element:
 			.page_content -> Chunk text
 			.metadata -> Original document metadata
+	Args: 
+		- doc: path to pdf to be chunked
+		- start: page to begin chunking
+		- end: last page to chunk
     Return:
 		A list of Document instances
     """
 
 	#- INIT THE FILE LOADER
-	#(Check the documentation of PyPDFLoader, many values are set to default in this __init__ call)
 	loader = PyMuPDFLoader(
-		file_path="./docs/C_Book_2nd.pdf",
+		file_path=doc,
 		mode="page",
 		extract_images=False
 	)
@@ -32,17 +35,17 @@ def chunker():
 	logger.debug("chunking.py - Document Loaded")
 	
 	# Skip intro and outro
-	docs = docs[8:]
+	docs = docs[start:end]
 
 	#- INIT THE TEXT SPLITTER
 	# decide here how small you want to chunk, its set to max at 1000/200
 	splitter = RecursiveCharacterTextSplitter(
-		chunk_size=1000,
-		chunk_overlap=200
+		chunk_size=700,
+		chunk_overlap=150
 	)
 	logger.debug("chunking.py - Splitter Created")
 	# Call the function split_documents() to split the docs and init the list of Documents
 	# Each document in the list is a chunck of the original
 	chunks = splitter.split_documents(docs)
-	logger.debug("chunking.py - Docs Splitted")
+	logger.info(f"chunking.py - {doc} Splitted")
 	return (chunks)
