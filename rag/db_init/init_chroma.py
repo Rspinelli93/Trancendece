@@ -2,6 +2,7 @@ import logging
 import chromadb
 import chroma_store
 import chunking
+import pathlib
 
 logger = logging.getLogger(__name__)
 chroma_client = chromadb.PersistentClient(path="../chroma_db")

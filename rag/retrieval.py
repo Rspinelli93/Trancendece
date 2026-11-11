@@ -3,35 +3,22 @@ import logging
 import chroma
 import reranker
 import llm
+import schemas
 
 logger = logging.getLogger(__name__)
 chroma_client = chromadb.PersistentClient(path="./chroma_db")
 
-def retrieve_message():
-    user_prompt = "What is a pointer?"				#User prompt recieved in HTTP
-    tips = ["memory lost", "seg_fault", "pointer"]	#Pre set excersise tips
-    forbidden_functions = ["printf"]				#Pre set forbidden functions
-    excersise_subject = "Make a function that swaps two pointers"
-    code = """
-            int main(void)
-            {
-                char *ptr1 = "hola";
-                
-            }
-            """									#User code
+def retrieve_message(prompt: schemas.Prompt):
+    # Load ChromaDB
+    collection = chroma_client.get_collection(name="trancendence_rag")
 
-    #Try to log to ChromaDB
-    logging.basicConfig(filename='info.log', level=logging.DEBUG, filemode='w', format='%(asctime)s - %(message)s')
+    # Vector Searching and retrieval
+    matches = chroma.get_querry_matches(collection, prompt.question + prompt.description, 5)
 
-    #Check if ChromaDB was loaded
-    collection = chroma_client.get_or_create_collection(name="trancendence_rag")
+    # Rerank the retireved chunks with SentenceTransformers
+    ranks = reranker.re_ranker(prompt.question, matches)
 
-    #Get matched from ChromaDB + User prompt + tips
-    matches = chroma.get_querry_matches(collection, user_prompt, tips, 5)
+    # Send context to the LLM
+    message = llm.get_llm_answer(ranks, prompt)
 
-    #Rerank the retireved chunks with SentenceTransformers
-    ranks = reranker.re_ranker(user_prompt, matches)
-    #Send context to the LLM
-    message = llm.get_llm_answer(ranks, user_prompt, tips, code, excersise_subject, forbidden_functions)
-
-    print(message)
+    return(message)

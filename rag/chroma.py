@@ -2,7 +2,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def	get_querry_matches(collection, user_prompt:str, tips:list[str], n_result:int):
+def	get_querry_matches(collection, user_prompt:str, n_result:int):
 	"""
     Function to find matching vectors in chromaDB using querry()
 	Args:
@@ -14,7 +14,7 @@ def	get_querry_matches(collection, user_prompt:str, tips:list[str], n_result:int
 		A list of size n_result with the matching vectors
     """
 
-	queries = [user_prompt] + tips
+	queries = [user_prompt]
 	
 	results = collection.query(
 	query_texts=queries,		# Chroma will embed this automatically

@@ -1,15 +1,11 @@
 import logging
-from fastapi import FastAPI, HTTPException
 import retrieval
+import api
+import llm
+import chroma
+import schemas
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI()
-
-@app.get("/")
-async def root():
-    return {"status": "OK"}
-
-@app.post("/ask")
-def retrieve_response():
-    retrieval.retrieve_message()
+def main():
+    logging.basicConfig(filename='info.log', level=logging.DEBUG, filemode='w', format='%(asctime)s - %(message)s')
