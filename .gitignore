@@ -2,3 +2,10 @@ AGENTS.md
 en.subject.pdf
 .venv
 rag/chroma_db/*
+.env
+package-lock.json
+package.json
+*info.log
+/chroma_db
+/node_modules
+/rag/info.log
